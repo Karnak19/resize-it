@@ -124,10 +124,10 @@ process.on("SIGTERM", gracefulShutdown);
 // Start the server and initialize MinIO
 const server = app.listen(config.server.port, () => {
   console.log(
-    `🦊 Image Resizer is running at http://localhost:${config.server.port}`
+    `🦊 Image Resizer is running at http://${config.server.host}:${config.server.port}`
   );
   console.log(
-    `📚 Swagger documentation available at http://localhost:${config.server.port}/swagger`
+    `📚 Swagger documentation available at http://${config.server.host}:${config.server.port}/swagger`
   );
 
   if (config.dragonfly.enabled) {
