@@ -11,6 +11,26 @@ A high-performance image resizing and optimization service built with Bun and El
 - Simple API for uploading and retrieving images
 - Swagger documentation
 
+### Advanced Image Transformations
+
+- Rotation, flipping, and cropping
+- Grayscale conversion
+- Blur and sharpen effects
+- Text and image watermarking
+
+### Security Features
+
+- API key authentication
+- Rate limiting
+- Configurable CORS settings
+
+### Monitoring and Analytics
+
+- Request metrics tracking
+- Image processing statistics
+- System health monitoring
+- Memory usage tracking
+
 ## Prerequisites
 
 - [Bun](https://bun.sh/) (latest version)
@@ -47,6 +67,14 @@ MAX_HEIGHT=1080
 IMAGE_QUALITY=80
 CACHE_ENABLED=true
 CACHE_MAX_AGE=86400
+
+# Security settings
+ENABLE_API_KEY_AUTH=true
+API_KEYS=dev-api-key,test-api-key
+RATE_LIMIT_ENABLED=true
+RATE_LIMIT_WINDOW_MS=60000
+RATE_LIMIT_MAX=100
+CORS_ALLOWED_ORIGINS=*
 ```
 
 ## Development
@@ -65,13 +93,36 @@ bun run dev
 GET /resize/:path?width=<width>&height=<height>&format=<format>&quality=<quality>
 ```
 
-Parameters:
+#### Basic Parameters:
 
 - `path`: Path to the image in MinIO
 - `width` (optional): Desired width in pixels
 - `height` (optional): Desired height in pixels
 - `format` (optional): Output format (webp, jpeg, png)
 - `quality` (optional): Output quality (1-100)
+
+#### Transformation Parameters:
+
+- `rotate` (optional): Rotation angle in degrees
+- `flip` (optional): Flip the image vertically (true/false)
+- `flop` (optional): Flip the image horizontally (true/false)
+- `grayscale` (optional): Convert to grayscale (true/false)
+- `blur` (optional): Apply blur effect (0-100)
+- `sharpen` (optional): Apply sharpen effect (true/false)
+
+#### Watermark Parameters:
+
+- `watermarkText` (optional): Text to add as watermark
+- `watermarkImage` (optional): Path to image to use as watermark
+- `watermarkPosition` (optional): Position of watermark (top-left, top-right, bottom-left, bottom-right, center)
+- `watermarkOpacity` (optional): Opacity of watermark (0-1)
+
+#### Crop Parameters:
+
+- `cropLeft` (optional): Left position for cropping
+- `cropTop` (optional): Top position for cropping
+- `cropWidth` (optional): Width of crop area
+- `cropHeight` (optional): Height of crop area
 
 ### Upload an Image
 
@@ -89,11 +140,67 @@ Request body (JSON):
 }
 ```
 
+### Admin Endpoints
+
+All admin endpoints require API key authentication via the `X-API-Key` header.
+
+#### Get System Stats
+
+```
+GET /admin/stats
+```
+
+Returns statistics about the system, including request metrics and image processing metrics.
+
+#### Clear Cache
+
+```
+POST /admin/cache/clear
+```
+
+Parameters:
+
+- `pattern` (optional): Pattern to match cache entries to clear
+
+#### List Cached Images
+
+```
+GET /admin/cache/list
+```
+
+Parameters:
+
+- `prefix` (optional): Prefix to filter cache entries
+- `limit` (optional): Maximum number of entries to return
+- `marker` (optional): Marker for pagination
+
+#### Get System Health
+
+```
+GET /admin/health
+```
+
+Returns detailed health information about the system.
+
 ### Health Check
 
 ```
 GET /health
 ```
+
+## Security
+
+### API Key Authentication
+
+To use protected endpoints, include the `X-API-Key` header with a valid API key:
+
+```
+X-API-Key: your-api-key
+```
+
+### Rate Limiting
+
+The API includes rate limiting to prevent abuse. By default, it allows 100 requests per minute per IP address.
 
 ## Documentation
 

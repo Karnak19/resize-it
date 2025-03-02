@@ -28,4 +28,24 @@ export const config = {
       ? parseInt(process.env.CACHE_MAX_AGE)
       : 86400, // 1 day in seconds
   },
+  security: {
+    apiKeys: process.env.API_KEYS
+      ? process.env.API_KEYS.split(",")
+      : ["dev-api-key"],
+    enableApiKeyAuth: process.env.ENABLE_API_KEY_AUTH === "true",
+    rateLimit: {
+      enabled: process.env.RATE_LIMIT_ENABLED !== "false",
+      windowMs: process.env.RATE_LIMIT_WINDOW_MS
+        ? parseInt(process.env.RATE_LIMIT_WINDOW_MS)
+        : 60000, // 1 minute
+      max: process.env.RATE_LIMIT_MAX
+        ? parseInt(process.env.RATE_LIMIT_MAX)
+        : 100, // 100 requests per minute
+    },
+    cors: {
+      allowedOrigins: process.env.CORS_ALLOWED_ORIGINS
+        ? process.env.CORS_ALLOWED_ORIGINS.split(",")
+        : ["*"],
+    },
+  },
 };

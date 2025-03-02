@@ -18,6 +18,7 @@ export class ImageController {
           try {
             const { path } = params;
             const options: ResizeOptions = {
+              // Basic options
               width: query.width ? parseInt(query.width as string) : undefined,
               height: query.height
                 ? parseInt(query.height as string)
@@ -26,7 +27,46 @@ export class ImageController {
               quality: query.quality
                 ? parseInt(query.quality as string)
                 : config.image.quality,
+
+              // Transformation options
+              rotate: query.rotate
+                ? parseInt(query.rotate as string)
+                : undefined,
+              flip: query.flip === "true",
+              flop: query.flop === "true",
+              grayscale: query.grayscale === "true",
+              blur: query.blur ? parseFloat(query.blur as string) : undefined,
+              sharpen: query.sharpen === "true",
             };
+
+            // Handle watermark
+            if (query.watermarkText) {
+              options.watermark = {
+                text: query.watermarkText as string,
+                position: (query.watermarkPosition as any) || "bottom-right",
+                opacity: query.watermarkOpacity
+                  ? parseFloat(query.watermarkOpacity as string)
+                  : 0.5,
+              };
+            } else if (query.watermarkImage) {
+              options.watermark = {
+                image: query.watermarkImage as string,
+                position: (query.watermarkPosition as any) || "bottom-right",
+                opacity: query.watermarkOpacity
+                  ? parseFloat(query.watermarkOpacity as string)
+                  : 0.5,
+              };
+            }
+
+            // Handle crop
+            if (query.cropWidth && query.cropHeight) {
+              options.crop = {
+                left: query.cropLeft ? parseInt(query.cropLeft as string) : 0,
+                top: query.cropTop ? parseInt(query.cropTop as string) : 0,
+                width: parseInt(query.cropWidth as string),
+                height: parseInt(query.cropHeight as string),
+              };
+            }
 
             // Generate a cache key for this specific resize operation
             const cacheKey = this.imageService.generateCacheKey(path, options);
@@ -62,7 +102,8 @@ export class ImageController {
             // Resize the image
             const resizedImage = await this.imageService.resize(
               originalImage,
-              options
+              options,
+              path
             );
 
             // Store the resized image in the cache if caching is enabled
@@ -93,10 +134,31 @@ export class ImageController {
             path: t.String(),
           }),
           query: t.Object({
+            // Basic options
             width: t.Optional(t.String()),
             height: t.Optional(t.String()),
             format: t.Optional(t.String()),
             quality: t.Optional(t.String()),
+
+            // Transformation options
+            rotate: t.Optional(t.String()),
+            flip: t.Optional(t.String()),
+            flop: t.Optional(t.String()),
+            grayscale: t.Optional(t.String()),
+            blur: t.Optional(t.String()),
+            sharpen: t.Optional(t.String()),
+
+            // Watermark options
+            watermarkText: t.Optional(t.String()),
+            watermarkImage: t.Optional(t.String()),
+            watermarkPosition: t.Optional(t.String()),
+            watermarkOpacity: t.Optional(t.String()),
+
+            // Crop options
+            cropLeft: t.Optional(t.String()),
+            cropTop: t.Optional(t.String()),
+            cropWidth: t.Optional(t.String()),
+            cropHeight: t.Optional(t.String()),
           }),
         }
       )
