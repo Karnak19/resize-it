@@ -4,7 +4,6 @@
 export const config = {
   server: {
     port: process.env.PORT ? parseInt(process.env.PORT) : 3000,
-    host: process.env.HOST || "0.0.0.0",
   },
   minio: {
     endPoint: process.env.MINIO_ENDPOINT || "localhost",
