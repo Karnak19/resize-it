@@ -17,4 +17,4 @@ ENV HOST=0.0.0.0
 ENV PORT=3000
 
 # Start the application
-CMD ["bun", "run", "src/index.ts"] 
+ENTRYPOINT ["bun", "run", "src/index.ts"]
