@@ -43,11 +43,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "${PORT:-3000}:3000"
     environment:
-      PORT: 3000
-      HOST: 0.0.0.0
       MINIO_ENDPOINT: minio
       MINIO_PORT: 9000
       MINIO_USE_SSL: "${MINIO_USE_SSL:-false}"
