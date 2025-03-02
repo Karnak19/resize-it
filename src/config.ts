@@ -28,6 +28,16 @@ export const config = {
       ? parseInt(process.env.CACHE_MAX_AGE)
       : 86400, // 1 day in seconds
   },
+  dragonfly: {
+    enabled: process.env.DRAGONFLY_ENABLED === "true",
+    host: process.env.DRAGONFLY_HOST || "localhost",
+    port: process.env.DRAGONFLY_PORT
+      ? parseInt(process.env.DRAGONFLY_PORT)
+      : 6379,
+    ttl: process.env.DRAGONFLY_CACHE_TTL
+      ? parseInt(process.env.DRAGONFLY_CACHE_TTL)
+      : 86400, // 1 day in seconds
+  },
   security: {
     apiKeys: process.env.API_KEYS
       ? process.env.API_KEYS.split(",")

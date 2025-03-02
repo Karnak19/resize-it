@@ -20,9 +20,19 @@ interface ImageProcessingMetric {
   timestamp: number;
 }
 
+interface CacheMetric {
+  key: string;
+  operation: string;
+  duration: number;
+  timestamp: number;
+  [key: string]: any;
+}
+
 export class MonitoringService {
   private requestMetrics: RequestMetric[] = [];
   private imageProcessingMetrics: ImageProcessingMetric[] = [];
+  private cacheMetrics: CacheMetric[] = [];
+  private genericMetrics: Record<string, any[]> = {};
   private startTime = Date.now();
   private maxMetricsCount = 1000; // Limit the number of metrics stored in memory
 
@@ -49,6 +59,52 @@ export class MonitoringService {
       this.imageProcessingMetrics = this.imageProcessingMetrics.slice(
         -this.maxMetricsCount
       );
+    }
+  }
+
+  /**
+   * Record a generic metric
+   * @param type The type/category of metric
+   * @param data The metric data
+   */
+  recordMetric(type: string, data: Record<string, any>): void {
+    // Initialize the array for this metric type if it doesn't exist
+    if (!this.genericMetrics[type]) {
+      this.genericMetrics[type] = [];
+    }
+
+    // Add timestamp if not provided
+    const metricWithTimestamp = {
+      ...data,
+      timestamp: data.timestamp || Date.now(),
+    };
+
+    // Add the metric
+    this.genericMetrics[type].push(metricWithTimestamp);
+
+    // Trim the metrics array if it gets too large
+    if (this.genericMetrics[type].length > this.maxMetricsCount) {
+      this.genericMetrics[type] = this.genericMetrics[type].slice(
+        -this.maxMetricsCount
+      );
+    }
+
+    // Special handling for cache metrics
+    if (type.startsWith("cache_")) {
+      const cacheMetric: CacheMetric = {
+        key: data.key,
+        operation: type.replace("cache_", ""),
+        duration: data.duration || 0,
+        timestamp: metricWithTimestamp.timestamp,
+        ...data,
+      };
+
+      this.cacheMetrics.push(cacheMetric);
+
+      // Trim the cache metrics array if it gets too large
+      if (this.cacheMetrics.length > this.maxMetricsCount) {
+        this.cacheMetrics = this.cacheMetrics.slice(-this.maxMetricsCount);
+      }
     }
   }
 
@@ -110,6 +166,26 @@ export class MonitoringService {
       return acc;
     }, {} as Record<string, number>);
 
+    // Calculate cache statistics
+    const totalCacheOps = this.cacheMetrics.length;
+    const cacheHits = this.cacheMetrics.filter(
+      (m) => m.operation === "get" && m.hit
+    ).length;
+    const cacheMisses = this.cacheMetrics.filter(
+      (m) => m.operation === "get" && !m.hit
+    ).length;
+    const cacheHitRate =
+      cacheHits + cacheMisses > 0 ? cacheHits / (cacheHits + cacheMisses) : 0;
+
+    const avgCacheGetTime = this.calculateAvgMetricDuration(
+      this.cacheMetrics,
+      "get"
+    );
+    const avgCacheSetTime = this.calculateAvgMetricDuration(
+      this.cacheMetrics,
+      "set"
+    );
+
     return {
       uptime,
       requests: {
@@ -125,7 +201,29 @@ export class MonitoringService {
         avgCompressionRatio,
         formatDistribution,
       },
+      cache: {
+        total: totalCacheOps,
+        hits: cacheHits,
+        misses: cacheMisses,
+        hitRate: cacheHitRate,
+        avgGetTime: avgCacheGetTime,
+        avgSetTime: avgCacheSetTime,
+      },
     };
+  }
+
+  /**
+   * Helper method to calculate average duration for a specific operation
+   */
+  private calculateAvgMetricDuration(
+    metrics: CacheMetric[],
+    operation: string
+  ): number {
+    const filteredMetrics = metrics.filter((m) => m.operation === operation);
+    return filteredMetrics.length > 0
+      ? filteredMetrics.reduce((sum, m) => sum + m.duration, 0) /
+          filteredMetrics.length
+      : 0;
   }
 
   /**

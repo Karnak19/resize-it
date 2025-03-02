@@ -1,72 +1,81 @@
-# Resize-It: Image Resizer and Optimizer
+# Resize-It: Modern Image Resizing Service
 
-A high-performance image resizing and optimization service built with Bun and Elysia that acts as a pass-through between websites and MinIO storage.
+A high-performance API for resizing, optimizing, and transforming images with advanced caching powered by Dragonfly DB.
 
-## Features
+![Resize-It Banner](https://via.placeholder.com/1200x300/4a6bff/ffffff?text=Resize-It)
 
-- On-the-fly image resizing and optimization
-- Support for multiple output formats (WebP, JPEG, PNG)
-- Configurable quality settings
-- Caching of resized images for improved performance
-- Simple API for uploading and retrieving images
-- Swagger documentation
+## 🚀 Features
 
-### Advanced Image Transformations
+- **High Performance**: Built with Bun and Elysia for lightning-fast image processing
+- **Advanced Caching**: Utilizes Dragonfly DB for ultra-fast in-memory caching
+- **Flexible Transformations**: Resize, crop, rotate, apply filters, and add watermarks
+- **Comprehensive Metrics**: Track image processing performance and cache hit rates
+- **Secure API**: API key authentication, rate limiting, and CORS protection
+- **Object Storage**: Seamless integration with MinIO for scalable storage
 
-- Rotation, flipping, and cropping
-- Grayscale conversion
-- Blur and sharpen effects
-- Text and image watermarking
+## 🛠️ Tech Stack
 
-### Security Features
+- **Runtime**: [Bun](https://bun.sh/) - JavaScript runtime with built-in bundler
+- **Framework**: [Elysia.js](https://elysiajs.com/) - TypeScript framework for building fast web applications
+- **Image Processing**: [Sharp](https://sharp.pixelplumbing.com/) - High-performance image processing
+- **Storage**: [MinIO](https://min.io/) - S3-compatible object storage
+- **Caching**: [Dragonfly DB](https://www.dragonflydb.io/) - Ultra-fast Redis-compatible in-memory store
+- **Redis Client**: [ioredis](https://github.com/redis/ioredis) - Redis client for Node.js with promises
+- **Containerization**: [Docker](https://www.docker.com/) - For easy deployment
 
-- API key authentication
-- Rate limiting
-- Configurable CORS settings
+## 📋 Prerequisites
 
-### Monitoring and Analytics
+- Docker and Docker Compose
+- Git
 
-- Request metrics tracking
-- Image processing statistics
-- System health monitoring
-- Memory usage tracking
-
-## Prerequisites
-
-- [Bun](https://bun.sh/) (latest version)
-- [MinIO](https://min.io/) server (for storage)
-
-## Installation
+## 🚀 Quick Start
 
 1. Clone the repository:
 
-```bash
-git clone https://github.com/yourusername/resize-it.git
-cd resize-it
+   ```bash
+   git clone https://github.com/yourusername/resize-it.git
+   cd resize-it
+   ```
+
+2. Start the services with Docker Compose:
+
+   ```bash
+   docker-compose up -d
+   ```
+
+3. The service will be available at http://localhost:3005
+
+## 🔧 Configuration
+
+Configuration is managed through environment variables in the `.env` file:
+
 ```
-
-2. Install dependencies:
-
-```bash
-bun install
-```
-
-3. Configure environment variables (create a `.env` file):
-
-```
+# Server settings
 PORT=3000
 HOST=0.0.0.0
+
+# MinIO settings
 MINIO_ENDPOINT=localhost
 MINIO_PORT=9000
 MINIO_USE_SSL=false
 MINIO_ACCESS_KEY=minioadmin
 MINIO_SECRET_KEY=minioadmin
 MINIO_BUCKET=images
+
+# Image settings
 MAX_WIDTH=1920
 MAX_HEIGHT=1080
 IMAGE_QUALITY=80
+
+# Cache settings
 CACHE_ENABLED=true
 CACHE_MAX_AGE=86400
+
+# Dragonfly settings
+DRAGONFLY_HOST=localhost
+DRAGONFLY_PORT=6379
+DRAGONFLY_ENABLED=true
+DRAGONFLY_CACHE_TTL=86400
 
 # Security settings
 ENABLE_API_KEY_AUTH=true
@@ -77,135 +86,95 @@ RATE_LIMIT_MAX=100
 CORS_ALLOWED_ORIGINS=*
 ```
 
-## Development
-
-To start the development server with hot reloading:
-
-```bash
-bun run dev
-```
-
-## API Endpoints
+## 📝 API Usage
 
 ### Resize an Image
 
-```
-GET /resize/:path?width=<width>&height=<height>&format=<format>&quality=<quality>
-```
-
-#### Basic Parameters:
-
-- `path`: Path to the image in MinIO
-- `width` (optional): Desired width in pixels
-- `height` (optional): Desired height in pixels
-- `format` (optional): Output format (webp, jpeg, png)
-- `quality` (optional): Output quality (1-100)
-
-#### Transformation Parameters:
-
-- `rotate` (optional): Rotation angle in degrees
-- `flip` (optional): Flip the image vertically (true/false)
-- `flop` (optional): Flip the image horizontally (true/false)
-- `grayscale` (optional): Convert to grayscale (true/false)
-- `blur` (optional): Apply blur effect (0-100)
-- `sharpen` (optional): Apply sharpen effect (true/false)
-
-#### Watermark Parameters:
-
-- `watermarkText` (optional): Text to add as watermark
-- `watermarkImage` (optional): Path to image to use as watermark
-- `watermarkPosition` (optional): Position of watermark (top-left, top-right, bottom-left, bottom-right, center)
-- `watermarkOpacity` (optional): Opacity of watermark (0-1)
-
-#### Crop Parameters:
-
-- `cropLeft` (optional): Left position for cropping
-- `cropTop` (optional): Top position for cropping
-- `cropWidth` (optional): Width of crop area
-- `cropHeight` (optional): Height of crop area
-
-### Upload an Image
-
-```
-POST /upload
+```bash
+curl -X GET "http://localhost:3005/image/resize?path=example.jpg&width=800&height=600&format=webp" \
+  -H "X-API-Key: dev-api-key" \
+  -o resized-image.webp
 ```
 
-Request body (JSON):
+### Apply Transformations
 
-```json
-{
-  "image": "base64-encoded-image-data",
-  "path": "desired/path/in/minio",
-  "contentType": "image/jpeg"
-}
+```bash
+curl -X GET "http://localhost:3005/image/resize?path=example.jpg&width=500&grayscale=true&blur=5&watermark[text]=Copyright" \
+  -H "X-API-Key: dev-api-key" \
+  -o transformed-image.webp
 ```
 
-### Admin Endpoints
+### Check Service Health
 
-All admin endpoints require API key authentication via the `X-API-Key` header.
-
-#### Get System Stats
-
-```
-GET /admin/stats
+```bash
+curl -X GET "http://localhost:3005/admin/health" \
+  -H "X-API-Key: dev-api-key"
 ```
 
-Returns statistics about the system, including request metrics and image processing metrics.
+### Get Service Statistics
 
-#### Clear Cache
-
-```
-POST /admin/cache/clear
-```
-
-Parameters:
-
-- `pattern` (optional): Pattern to match cache entries to clear
-
-#### List Cached Images
-
-```
-GET /admin/cache/list
+```bash
+curl -X GET "http://localhost:3005/admin/stats" \
+  -H "X-API-Key: dev-api-key"
 ```
 
-Parameters:
+## 🔍 Available Transformations
 
-- `prefix` (optional): Prefix to filter cache entries
-- `limit` (optional): Maximum number of entries to return
-- `marker` (optional): Marker for pagination
+| Parameter             | Type    | Description                                                                          |
+| --------------------- | ------- | ------------------------------------------------------------------------------------ |
+| `width`               | number  | Target width in pixels                                                               |
+| `height`              | number  | Target height in pixels                                                              |
+| `format`              | string  | Output format: `webp`, `jpeg`, or `png`                                              |
+| `quality`             | number  | Compression quality (1-100)                                                          |
+| `rotate`              | number  | Rotation angle in degrees                                                            |
+| `flip`                | boolean | Flip the image vertically                                                            |
+| `flop`                | boolean | Flip the image horizontally                                                          |
+| `grayscale`           | boolean | Convert to grayscale                                                                 |
+| `blur`                | number  | Gaussian blur (sigma)                                                                |
+| `sharpen`             | boolean | Sharpen the image                                                                    |
+| `watermark[text]`     | string  | Text watermark                                                                       |
+| `watermark[image]`    | string  | Image watermark path                                                                 |
+| `watermark[position]` | string  | Watermark position: `top-left`, `top-right`, `bottom-left`, `bottom-right`, `center` |
+| `watermark[opacity]`  | number  | Watermark opacity (0-1)                                                              |
+| `crop[left]`          | number  | Left offset for cropping                                                             |
+| `crop[top]`           | number  | Top offset for cropping                                                              |
+| `crop[width]`         | number  | Width of crop area                                                                   |
+| `crop[height]`        | number  | Height of crop area                                                                  |
 
-#### Get System Health
+## 📊 Monitoring
 
-```
-GET /admin/health
-```
+The service includes comprehensive monitoring capabilities:
 
-Returns detailed health information about the system.
+- **Request Metrics**: Track API usage, response times, and status codes
+- **Image Processing Metrics**: Monitor transformation times and compression ratios
+- **Cache Metrics**: Track cache hit rates and performance
+- **System Health**: Monitor service uptime and resource usage
 
-### Health Check
+Access these metrics through the `/admin/stats` endpoint.
 
-```
-GET /health
-```
+## 🔒 Security
 
-## Security
+- **API Key Authentication**: Protect your API with key-based authentication
+- **Rate Limiting**: Prevent abuse with configurable rate limits
+- **CORS Protection**: Control which domains can access your API
 
-### API Key Authentication
+## 🐉 Dragonfly DB Integration
 
-To use protected endpoints, include the `X-API-Key` header with a valid API key:
+Resize-It uses Dragonfly DB for high-performance caching:
 
-```
-X-API-Key: your-api-key
-```
+- **Ultra-fast In-memory Store**: Much faster than traditional Redis
+- **Persistent Caching**: Survive service restarts with persistent storage
+- **Automatic TTL**: Configure time-to-live for cached images
+- **Metrics Tracking**: Monitor cache performance
 
-### Rate Limiting
+## 🤝 Contributing
 
-The API includes rate limiting to prevent abuse. By default, it allows 100 requests per minute per IP address.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Documentation
+## 📄 License
 
-Swagger documentation is available at `/swagger` when the server is running.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## License
+---
 
-MIT
+Built with ❤️ using Bun, Elysia, and Dragonfly DB

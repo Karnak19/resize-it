@@ -5,6 +5,7 @@ import { config } from "./config";
 import { ImageService } from "./services/image.service";
 import { MinioService } from "./services/minio.service";
 import { MonitoringService } from "./services/monitoring.service";
+import { CacheService } from "./services/cache.service";
 import { ImageController } from "./controllers/image.controller";
 import { AdminController } from "./controllers/admin.controller";
 import { AuthMiddleware } from "./middleware/auth.middleware";
@@ -12,11 +13,16 @@ import { AuthMiddleware } from "./middleware/auth.middleware";
 // Initialize services
 const minioService = new MinioService();
 const monitoringService = new MonitoringService();
-const imageService = new ImageService(monitoringService);
+const cacheService = new CacheService(monitoringService);
+const imageService = new ImageService(monitoringService, cacheService);
 
 // Initialize controllers
 const imageController = new ImageController(imageService, minioService);
-const adminController = new AdminController(monitoringService, minioService);
+const adminController = new AdminController(
+  monitoringService,
+  minioService,
+  cacheService
+);
 
 // Initialize MinIO bucket with retries
 const initializeMinIO = async (retries = 5, delay = 3000) => {
@@ -99,6 +105,22 @@ adminController.registerRoutes(adminApp);
 app.use(imageApp);
 app.use(adminApp);
 
+// Add a graceful shutdown handler
+const gracefulShutdown = async () => {
+  console.log("Shutting down gracefully...");
+
+  // Close cache connection
+  await cacheService.close();
+
+  // No need to explicitly close the server as process.exit will terminate everything
+  console.log("Server shutdown complete");
+  process.exit(0);
+};
+
+// Register shutdown handlers
+process.on("SIGINT", gracefulShutdown);
+process.on("SIGTERM", gracefulShutdown);
+
 // Start the server and initialize MinIO
 const server = app.listen(config.server.port, () => {
   console.log(
@@ -107,6 +129,14 @@ const server = app.listen(config.server.port, () => {
   console.log(
     `📚 Swagger documentation available at http://${config.server.host}:${config.server.port}/swagger`
   );
+
+  if (config.dragonfly.enabled) {
+    console.log(
+      `🐉 Dragonfly caching is enabled at ${config.dragonfly.host}:${config.dragonfly.port}`
+    );
+  } else {
+    console.log("🐉 Dragonfly caching is disabled");
+  }
 
   // Initialize MinIO after server has started
   initializeMinIO().catch((error) => {

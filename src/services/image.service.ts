@@ -2,6 +2,7 @@ import sharp from "sharp";
 import { config } from "../config";
 import { createHash } from "crypto";
 import { MonitoringService } from "./monitoring.service";
+import { CacheService } from "./cache.service";
 
 export interface ResizeOptions {
   width?: number;
@@ -33,11 +34,22 @@ export interface ResizeOptions {
   };
 }
 
+interface CachedImage {
+  buffer: Buffer;
+  contentType: string;
+  cacheTime: number;
+}
+
 export class ImageService {
   private monitoringService?: MonitoringService;
+  private cacheService?: CacheService;
 
-  constructor(monitoringService?: MonitoringService) {
+  constructor(
+    monitoringService?: MonitoringService,
+    cacheService?: CacheService
+  ) {
     this.monitoringService = monitoringService;
+    this.cacheService = cacheService;
   }
 
   async resize(
@@ -47,6 +59,28 @@ export class ImageService {
   ): Promise<Buffer> {
     const startTime = performance.now();
     const inputSize = imageBuffer.length;
+
+    // Try to get from cache first if cache service is available
+    if (this.cacheService && config.cache.enabled) {
+      const cacheKey = this.cacheService.generateImageCacheKey(
+        originalPath,
+        options
+      );
+      const cachedImage = await this.cacheService.get<CachedImage>(cacheKey);
+
+      if (cachedImage) {
+        // Record cache hit metric
+        if (this.monitoringService) {
+          this.monitoringService.recordMetric("image_cache", {
+            originalPath,
+            cacheHit: true,
+            size: cachedImage.buffer.length,
+            age: Date.now() - cachedImage.cacheTime,
+          });
+        }
+        return cachedImage.buffer;
+      }
+    }
 
     const {
       width = config.image.maxWidth,
@@ -128,6 +162,7 @@ export class ImageService {
 
     const outputBuffer = await transformer.toBuffer();
     const endTime = performance.now();
+    const processingTime = endTime - startTime;
 
     // Record metrics if monitoring service is available
     if (this.monitoringService) {
@@ -137,8 +172,32 @@ export class ImageService {
         outputFormat: format,
         inputSize,
         outputSize: outputBuffer.length,
-        processingTime: endTime - startTime,
+        processingTime,
         timestamp: Date.now(),
+      });
+
+      // Record cache miss metric
+      if (this.cacheService && config.cache.enabled) {
+        this.monitoringService.recordMetric("image_cache", {
+          originalPath,
+          cacheHit: false,
+          processingTime,
+        });
+      }
+    }
+
+    // Store in cache if cache service is available
+    if (this.cacheService && config.cache.enabled) {
+      const cacheKey = this.cacheService.generateImageCacheKey(
+        originalPath,
+        options
+      );
+      const contentType = this.getContentType(format);
+
+      await this.cacheService.set(cacheKey, {
+        buffer: outputBuffer,
+        contentType,
+        cacheTime: Date.now(),
       });
     }
 

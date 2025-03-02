@@ -1,13 +1,15 @@
 import { Elysia, t } from "elysia";
 import { MonitoringService } from "../services/monitoring.service";
 import { MinioService } from "../services/minio.service";
+import { CacheService } from "../services/cache.service";
 import { config } from "../config";
 import { AuthMiddleware } from "../middleware/auth.middleware";
 
 export class AdminController {
   constructor(
     private readonly monitoringService: MonitoringService,
-    private readonly minioService: MinioService
+    private readonly minioService: MinioService,
+    private readonly cacheService?: CacheService
   ) {}
 
   registerRoutes(app: Elysia): Elysia {
@@ -21,9 +23,9 @@ export class AdminController {
           return this.monitoringService.getStats();
         })
 
-        // Clear cache
+        // Clear MinIO cache
         .post(
-          "/cache/clear",
+          "/cache/minio/clear",
           async ({ query, set }) => {
             try {
               const { pattern } = query;
@@ -40,7 +42,7 @@ export class AdminController {
               if (objectsToDelete.length === 0) {
                 return {
                   success: true,
-                  message: "No cache entries found to clear",
+                  message: "No MinIO cache entries found to clear",
                   count: 0,
                 };
               }
@@ -54,13 +56,13 @@ export class AdminController {
 
               return {
                 success: true,
-                message: "Cache cleared successfully",
+                message: "MinIO cache cleared successfully",
                 count: objectsToDelete.length,
               };
             } catch (error) {
-              console.error("Error clearing cache:", error);
+              console.error("Error clearing MinIO cache:", error);
               set.status = 500;
-              return { error: "Failed to clear cache" };
+              return { error: "Failed to clear MinIO cache" };
             }
           },
           {
@@ -70,9 +72,56 @@ export class AdminController {
           }
         )
 
-        // List cached images
+        // Clear Dragonfly cache
+        .post(
+          "/cache/dragonfly/clear",
+          async ({ query, set }) => {
+            try {
+              if (!this.cacheService || !config.dragonfly.enabled) {
+                set.status = 400;
+                return {
+                  success: false,
+                  error: "Dragonfly cache is not enabled",
+                };
+              }
+
+              const { pattern } = query;
+
+              // For now, we don't have a way to clear by pattern in Dragonfly
+              // We would need to implement a pattern-based deletion in the future
+              // For now, we'll just return a message that it's not supported
+              if (pattern) {
+                set.status = 400;
+                return {
+                  success: false,
+                  error:
+                    "Pattern-based cache clearing is not supported for Dragonfly yet",
+                };
+              }
+
+              // Since we can't clear by pattern, we'll just return a message
+              // In a real implementation, you would use Redis FLUSHDB or similar
+              return {
+                success: true,
+                message: "Dragonfly cache clearing is not implemented yet",
+                count: 0,
+              };
+            } catch (error) {
+              console.error("Error clearing Dragonfly cache:", error);
+              set.status = 500;
+              return { error: "Failed to clear Dragonfly cache" };
+            }
+          },
+          {
+            query: t.Object({
+              pattern: t.Optional(t.String()), // Optional pattern to clear specific cache entries
+            }),
+          }
+        )
+
+        // List cached images in MinIO
         .get(
-          "/cache/list",
+          "/cache/minio/list",
           async ({ query, set }) => {
             try {
               const { prefix = "cache/", limit = "100", marker = "" } = query;
@@ -111,9 +160,9 @@ export class AdminController {
                 nextMarker,
               };
             } catch (error) {
-              console.error("Error listing cache:", error);
+              console.error("Error listing MinIO cache:", error);
               set.status = 500;
-              return { error: "Failed to list cache" };
+              return { error: "Failed to list MinIO cache" };
             }
           },
           {
@@ -135,6 +184,20 @@ export class AdminController {
             minioStatus = "error";
           }
 
+          // Check Dragonfly connection if enabled
+          let dragonflyStatus = "disabled";
+          if (this.cacheService && config.dragonfly.enabled) {
+            try {
+              // Try to set and get a test value
+              const testKey = "health-check-" + Date.now();
+              await this.cacheService.set(testKey, { test: true }, 10);
+              const testValue = await this.cacheService.get(testKey);
+              dragonflyStatus = testValue ? "ok" : "error";
+            } catch (error) {
+              dragonflyStatus = "error";
+            }
+          }
+
           // Get memory usage
           const memoryUsage = process.memoryUsage();
 
@@ -149,6 +212,14 @@ export class AdminController {
             },
             services: {
               minio: minioStatus,
+              dragonfly: dragonflyStatus,
+            },
+            cache: {
+              dragonfly: {
+                enabled: config.dragonfly.enabled,
+                host: config.dragonfly.host,
+                port: config.dragonfly.port,
+              },
             },
           };
         })
