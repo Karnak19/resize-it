@@ -1,21 +1,23 @@
 {
-  "name": "app",
-  "version": "1.0.50",
+  "name": "resize-it-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --watch src/index.ts"
-  },
-  "dependencies": {
-    "@elysiajs/cors": "^1.2.0",
-    "@elysiajs/static": "^1.2.0",
-    "@elysiajs/swagger": "^1.2.2",
-    "elysia": "latest",
-    "ioredis": "^5.5.0",
-    "minio": "^8.0.4",
-    "sharp": "^0.33.5"
+    "dev": "bun run --cwd packages/api dev",
+    "build": "bun run --cwd packages/api build",
+    "start": "bun run --cwd packages/api start",
+    "test": "bun run --cwd packages/api test",
+    "sdk:dev": "bun run --cwd packages/sdk dev",
+    "sdk:build": "bun run --cwd packages/sdk build",
+    "sdk:test": "bun run --cwd packages/sdk test",
+    "sdk:version:patch": "bun run --cwd packages/sdk version:patch",
+    "sdk:version:minor": "bun run --cwd packages/sdk version:minor",
+    "sdk:version:major": "bun run --cwd packages/sdk version:major"
   },
   "devDependencies": {
     "bun-types": "latest"
-  },
-  "module": "src/index.js"
+  }
 }

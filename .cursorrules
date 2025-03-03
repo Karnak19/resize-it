@@ -1,0 +1,13 @@
+# AI Assistant Rules
+
+## Project Context
+
+This is a TypeScript-based image resizing service built with Elysia.js and Bun. The project follows a clean architecture pattern with separate controllers, services, middleware, and utilities.
+
+## Tech Stack
+
+- **Runtime**: Bun
+- **Framework**: Elysia.js
+- **Storage**: S3-compatible storage (MinIO)
+- **Caching**: Redis/Dragonfly
+- **Image Processing**: Sharp

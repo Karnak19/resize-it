@@ -1,0 +1,31 @@
+name: Test SDK Package
+
+on:
+  pull_request:
+    branches: ["main", "master"]
+    paths:
+      - "packages/sdk/**"
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run tests
+        run: bun run sdk:test
+
+      - name: Build SDK
+        run: bun run sdk:build
