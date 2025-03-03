@@ -7,12 +7,9 @@ services:
     expose:
       - "9000"
       - "9001"
-    ports:
-      - "9000:9000"
-      - "9001:9001"
     environment:
-      - MINIO_ROOT_USER=${SERVICE_USER_MINIO_USER}
-      - MINIO_ROOT_PASSWORD=${SERVICE_PASSWORD_MINIO_PASSWORD}
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
@@ -51,8 +48,8 @@ services:
       - MINIO_ENDPOINT=minio
       - MINIO_PORT=9000
       - MINIO_USE_SSL=false
-      - MINIO_ACCESS_KEY=${SERVICE_USER_MINIO_USER}
-      - MINIO_SECRET_KEY=${SERVICE_PASSWORD_MINIO_PASSWORD}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
       - MINIO_BUCKET=${MINIO_BUCKET:-images}
       - ENABLE_API_KEY_AUTH=false
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-*}
