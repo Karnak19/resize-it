@@ -3,144 +3,110 @@ import { cors } from "@elysiajs/cors";
 import { swagger } from "@elysiajs/swagger";
 import { config } from "./config";
 import { ImageService } from "./services/image.service";
-import { MinioService } from "./services/minio.service";
+import { BunS3Service } from "./services/bun-s3.service";
 import { MonitoringService } from "./services/monitoring.service";
 import { CacheService } from "./services/cache.service";
 import { ImageController } from "./controllers/image.controller";
 import { AdminController } from "./controllers/admin.controller";
-import { AuthMiddleware } from "./middleware/auth.middleware";
+import { logger } from "./utils/logger";
 
-// Initialize services
-const minioService = new MinioService();
+// Create services
 const monitoringService = new MonitoringService();
-const cacheService = new CacheService(monitoringService);
+const storageService = new BunS3Service();
+logger.info("Using Bun's built-in S3 client");
+
+// Initialize cache service if enabled
+let cacheService: CacheService | undefined;
+if (config.cache.enabled) {
+  cacheService = new CacheService(monitoringService);
+}
+
+// Create image service
 const imageService = new ImageService(monitoringService, cacheService);
 
-// Initialize controllers
-const imageController = new ImageController(imageService, minioService);
+// Create controllers
+const imageController = new ImageController(imageService, storageService);
 const adminController = new AdminController(
   monitoringService,
-  minioService,
+  storageService,
   cacheService
 );
 
-// Initialize MinIO bucket with retries
-const initializeMinIO = async (retries = 5, delay = 3000) => {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      console.log(
-        `Attempting to connect to MinIO (attempt ${attempt}/${retries})...`
-      );
-      await minioService.initialize();
-      console.log("Successfully connected to MinIO and initialized bucket");
-      return;
-    } catch (error) {
-      console.error(
-        `Failed to initialize MinIO (attempt ${attempt}/${retries}):`,
-        error
-      );
-
-      if (attempt === retries) {
-        console.error("Maximum retry attempts reached. Exiting...");
-        process.exit(1);
-      }
-
-      console.log(`Retrying in ${delay / 1000} seconds...`);
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    }
-  }
-};
-
 // Create and configure the app
 const app = new Elysia()
-  // Apply CORS middleware with configuration
-  .use(
-    cors({
-      origin: config.security.cors.allowedOrigins,
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization", "X-API-Key"],
-      credentials: true,
-    })
-  )
-  // Apply rate limiter middleware
-  .use(AuthMiddleware.rateLimiter)
-  // Apply request metrics middleware
-  // .use(monitoringService.createRequestMetricsMiddleware())
-  // Apply Swagger documentation
   .use(
     swagger({
       documentation: {
         info: {
-          title: "Image Resizer API",
+          title: "Resize-it API",
           version: "1.0.0",
-          description: "API for resizing and optimizing images stored in MinIO",
+          description:
+            "API for resizing and optimizing images stored in S3-compatible storage",
         },
         tags: [
-          { name: "Image", description: "Image operations" },
-          { name: "Admin", description: "Admin operations" },
-          { name: "Health", description: "Health check" },
+          { name: "images", description: "Image operations" },
+          { name: "admin", description: "Administrative operations" },
         ],
-        components: {
-          securitySchemes: {
-            apiKey: {
-              type: "apiKey",
-              in: "header",
-              name: "X-API-Key",
-            },
-          },
-        },
       },
     })
-  );
+  )
+  .use(cors())
+  .get("/", () => "Hello World")
+  .use((app) => imageController.registerRoutes(app))
+  .use((app) => adminController.registerRoutes(app));
 
-// Register routes
-// Create a new Elysia instance for each controller to avoid type issues
-const imageApp = new Elysia();
-imageController.registerRoutes(imageApp);
+// Initialize services
+const init = async () => {
+  try {
+    // Try to connect to S3 storage with retries
+    let retries = 0;
+    const maxRetries = 5;
+    let connected = false;
 
-const adminApp = new Elysia();
-adminController.registerRoutes(adminApp);
+    while (!connected && retries < maxRetries) {
+      try {
+        await storageService.initialize();
+        connected = true;
+        logger.info("Successfully connected to S3 storage");
+      } catch (error: any) {
+        retries++;
+        logger.error(
+          `Failed to connect to S3 storage (attempt ${retries}/${maxRetries}): ${error.message}`
+        );
+        if (retries < maxRetries) {
+          const delay = Math.pow(2, retries) * 1000; // Exponential backoff
+          logger.info(`Retrying in ${delay / 1000} seconds...`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+      }
+    }
 
-// Mount the controller apps to the main app
-app.use(imageApp);
-app.use(adminApp);
+    if (!connected) {
+      logger.error(
+        "Failed to connect to S3 storage after maximum retries. Application may not function correctly."
+      );
+    }
 
-// Add a graceful shutdown handler
-const gracefulShutdown = async () => {
-  console.log("Shutting down gracefully...");
+    // Initialize cache if enabled
+    if (cacheService) {
+      try {
+        await cacheService.close(); // Close any existing connections
+        logger.info("Cache service initialized");
+      } catch (error: any) {
+        logger.error(`Error initializing cache service: ${error.message}`);
+      }
+    }
 
-  // Close cache connection
-  await cacheService.close();
-
-  // No need to explicitly close the server as process.exit will terminate everything
-  console.log("Server shutdown complete");
-  process.exit(0);
+    logger.info(
+      `🦊 Server is running at ${app.server?.hostname}:${app.server?.port}`
+    );
+  } catch (error: any) {
+    logger.error(`Error during initialization: ${error.message}`);
+  }
 };
 
-// Register shutdown handlers
-process.on("SIGINT", gracefulShutdown);
-process.on("SIGTERM", gracefulShutdown);
-
-// Start the server and initialize MinIO
-const server = app.listen(config.server.port, () => {
-  console.log(
-    `🦊 Image Resizer is running at http://${config.server.host}:${config.server.port}`
-  );
-  console.log(
-    `📚 Swagger documentation available at http://${config.server.host}:${config.server.port}/swagger`
-  );
-
-  if (config.dragonfly.enabled) {
-    console.log(
-      `🐉 Dragonfly caching is enabled at ${config.dragonfly.host}:${config.dragonfly.port}`
-    );
-  } else {
-    console.log("🐉 Dragonfly caching is disabled");
-  }
-
-  // Initialize MinIO after server has started
-  initializeMinIO().catch((error) => {
-    console.error("Failed to initialize MinIO after retries:", error);
-    process.exit(1);
-  });
+app.listen(config.server.port, () => {
+  init();
 });
+
+export type App = typeof app;

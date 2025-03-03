@@ -6,13 +6,13 @@ export const config = {
     host: process.env.HOST || "0.0.0.0",
     port: process.env.PORT ? parseInt(process.env.PORT) : 3000,
   },
-  minio: {
-    endPoint: process.env.MINIO_ENDPOINT || "localhost",
-    port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT) : 9000,
-    useSSL: process.env.MINIO_USE_SSL === "true",
-    accessKey: process.env.MINIO_ACCESS_KEY || "minioadmin",
-    secretKey: process.env.MINIO_SECRET_KEY || "minioadmin",
-    bucket: process.env.MINIO_BUCKET || "images",
+  storage: {
+    endpoint: process.env.S3_ENDPOINT || "localhost",
+    port: process.env.S3_PORT ? parseInt(process.env.S3_PORT) : 9000,
+    useSSL: process.env.S3_USE_SSL === "true",
+    accessKey: process.env.S3_ACCESS_KEY || "minioadmin",
+    secretKey: process.env.S3_SECRET_KEY || "minioadmin",
+    bucket: process.env.S3_BUCKET || "images",
   },
   image: {
     maxWidth: process.env.MAX_WIDTH ? parseInt(process.env.MAX_WIDTH) : 1920,

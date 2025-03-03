@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { MonitoringService } from "../services/monitoring.service";
-import { MinioService } from "../services/minio.service";
+import { StorageService } from "../services/storage.interface";
 import { CacheService } from "../services/cache.service";
 import { config } from "../config";
 import { AuthMiddleware } from "../middleware/auth.middleware";
@@ -8,7 +8,7 @@ import { AuthMiddleware } from "../middleware/auth.middleware";
 export class AdminController {
   constructor(
     private readonly monitoringService: MonitoringService,
-    private readonly minioService: MinioService,
+    private readonly storageService: StorageService,
     private readonly cacheService?: CacheService
   ) {}
 
@@ -32,7 +32,7 @@ export class AdminController {
               const prefix = "cache/";
 
               // List all cache objects
-              const allObjects = await this.minioService.listObjects(prefix);
+              const allObjects = await this.storageService.listObjects(prefix);
 
               // Filter objects by pattern if provided
               const objectsToDelete = pattern
@@ -51,7 +51,7 @@ export class AdminController {
               const batchSize = 1000;
               for (let i = 0; i < objectsToDelete.length; i += batchSize) {
                 const batch = objectsToDelete.slice(i, i + batchSize);
-                await this.minioService.removeObjects(batch);
+                await this.storageService.removeObjects(batch);
               }
 
               return {
@@ -128,7 +128,7 @@ export class AdminController {
               const limitNum = parseInt(limit);
 
               // List objects with the given prefix
-              const allObjects = await this.minioService.listObjects(prefix);
+              const allObjects = await this.storageService.listObjects(prefix);
 
               // Apply pagination
               let startIndex = 0;
@@ -179,7 +179,7 @@ export class AdminController {
           // Check MinIO connection
           let minioStatus = "ok";
           try {
-            await this.minioService.initialize();
+            await this.storageService.initialize();
           } catch (error) {
             minioStatus = "error";
           }

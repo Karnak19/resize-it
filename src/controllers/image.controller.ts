@@ -1,12 +1,12 @@
 import { Elysia, t } from "elysia";
 import { ImageService, ResizeOptions } from "../services/image.service";
-import { MinioService } from "../services/minio.service";
+import { StorageService } from "../services/storage.interface";
 import { config } from "../config";
 
 export class ImageController {
   constructor(
     private readonly imageService: ImageService,
-    private readonly minioService: MinioService
+    private readonly storageService: StorageService
   ) {}
 
   registerRoutes(app: Elysia): Elysia {
@@ -74,11 +74,11 @@ export class ImageController {
             // Check if the resized image already exists in the cache
             const cacheExists =
               config.cache.enabled &&
-              (await this.minioService.objectExists(`cache/${cacheKey}`));
+              (await this.storageService.objectExists(`cache/${cacheKey}`));
 
             if (cacheExists) {
               // Return the cached image
-              const cachedImage = await this.minioService.getObject(
+              const cachedImage = await this.storageService.getObject(
                 `cache/${cacheKey}`
               );
               set.headers["Content-Type"] = this.imageService.getContentType(
@@ -91,13 +91,13 @@ export class ImageController {
             }
 
             // Get the original image from MinIO
-            const originalExists = await this.minioService.objectExists(path);
+            const originalExists = await this.storageService.objectExists(path);
             if (!originalExists) {
               set.status = 404;
               return { error: "Image not found" };
             }
 
-            const originalImage = await this.minioService.getObject(path);
+            const originalImage = await this.storageService.getObject(path);
 
             // Resize the image
             const resizedImage = await this.imageService.resize(
@@ -108,7 +108,7 @@ export class ImageController {
 
             // Store the resized image in the cache if caching is enabled
             if (config.cache.enabled) {
-              await this.minioService.putObject(
+              await this.storageService.putObject(
                 `cache/${cacheKey}`,
                 resizedImage,
                 this.imageService.getContentType(options.format as string)
@@ -177,12 +177,12 @@ export class ImageController {
             const buffer = Buffer.from(image, "base64");
 
             // Store the original image in MinIO
-            await this.minioService.putObject(path, buffer, contentType);
+            await this.storageService.putObject(path, buffer, contentType);
 
             return {
               success: true,
               path,
-              url: this.minioService.getObjectUrl(path),
+              url: this.storageService.getObjectUrl(path),
             };
           } catch (error) {
             console.error("Error uploading image:", error);
