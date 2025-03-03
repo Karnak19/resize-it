@@ -64,12 +64,6 @@ services:
       dragonfly:
         condition: service_healthy
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 15s
 
 # Define named volumes for data persistence
 volumes:
