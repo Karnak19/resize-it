@@ -43,8 +43,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    expose:
+      - "3000"
     environment:
-      - SERVICE_FQDN_RESIZE_IT_3000
+      - SERVICE_FQDN_RESIZEIT_3000
       - S3_ENDPOINT=minio
       - S3_PORT=9000
       - S3_USE_SSL=false
