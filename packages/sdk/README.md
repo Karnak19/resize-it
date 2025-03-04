@@ -6,13 +6,13 @@ A simple TypeScript SDK for uploading and retrieving images from the ResizeIt se
 
 ```bash
 # Using npm
-npm install @resize-it/sdk
+npm install @karnak19/resize-it-sdk
 
 # Using yarn
-yarn add @resize-it/sdk
+yarn add @karnak19/resize-it-sdk
 
 # Using bun
-bun add @resize-it/sdk
+bun add @karnak19/resize-it-sdk
 ```
 
 ## Usage
@@ -20,7 +20,7 @@ bun add @resize-it/sdk
 ### Initializing the SDK
 
 ```typescript
-import { ResizeIt } from "@resize-it/sdk";
+import { ResizeIt } from "@karnak19/resize-it-sdk";
 
 const resizeIt = new ResizeIt({
   baseUrl: "https://your-resize-it-api.com",

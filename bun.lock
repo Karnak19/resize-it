@@ -24,7 +24,7 @@
       },
     },
     "packages/sdk": {
-      "name": "@resize-it/sdk",
+      "name": "@karnak19/resize-it-sdk",
       "version": "1.0.0",
       "dependencies": {
         "form-data": "^4.0.0",
@@ -89,7 +89,7 @@
 
     "@resize-it/api": ["@resize-it/api@workspace:packages/api"],
 
-    "@resize-it/sdk": ["@resize-it/sdk@workspace:packages/sdk"],
+    "@karnak19/resize-it-sdk": ["@karnak19/resize-it-sdk@workspace:packages/sdk"],
 
     "@scalar/openapi-types": ["@scalar/openapi-types@0.1.1", "", {}, "sha512-NMy3QNk6ytcCoPUGJH0t4NNr36OWXgZhA3ormr3TvhX1NDgoF95wFyodGVH8xiHeUyn2/FxtETm8UBLbB5xEmg=="],
 
