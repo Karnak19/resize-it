@@ -66,7 +66,7 @@ export class ResizeIt {
       }
 
       // Prepare the request
-      const response = await fetch(`${this.config.baseUrl}/upload`, {
+      const response = await fetch(`${this.config.baseUrl}/images/upload`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -108,7 +108,7 @@ export class ResizeIt {
    */
   getResizeUrl(imagePath: string, options: ResizeOptions = {}): string {
     // Start with the base URL and path
-    const url = new URL(`${this.config.baseUrl}/resize/${imagePath}`);
+    const url = new URL(`${this.config.baseUrl}/images/resize/${imagePath}`);
 
     // Add resize parameters
     if (options.width !== undefined)

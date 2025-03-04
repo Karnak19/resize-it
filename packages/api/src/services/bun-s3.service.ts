@@ -99,3 +99,5 @@ export class BunS3Service implements StorageService {
     );
   }
 }
+
+export const storageService = new BunS3Service();

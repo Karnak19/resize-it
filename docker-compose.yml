@@ -48,7 +48,7 @@ services:
     expose:
       - "3000"
     ports:
-      - "3000:3000"
+      - "3005:3000"
     environment:
       - S3_ENDPOINT=minio
       - S3_PORT=9000

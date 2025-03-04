@@ -1,8 +1,8 @@
 import sharp from "sharp";
 import { config } from "../config";
 import { createHash } from "crypto";
-import { MonitoringService } from "./monitoring.service";
-import { CacheService } from "./cache.service";
+import { monitoringService, MonitoringService } from "./monitoring.service";
+import { cacheService, CacheService } from "./cache.service";
 
 export interface ResizeOptions {
   width?: number;
@@ -339,3 +339,5 @@ export class ImageService {
     return createHash("md5").update(key).digest("hex");
   }
 }
+
+export const imageService = new ImageService(monitoringService, cacheService);

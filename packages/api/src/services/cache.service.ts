@@ -1,6 +1,6 @@
 import Redis from "ioredis";
 import { config } from "../config";
-import { MonitoringService } from "./monitoring.service";
+import { monitoringService, MonitoringService } from "./monitoring.service";
 
 export class CacheService {
   private redis: Redis | null = null;
@@ -159,3 +159,5 @@ export class CacheService {
     }
   }
 }
+
+export const cacheService = new CacheService(monitoringService);
