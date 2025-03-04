@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Resize-It: Modern Image Resizing Service</title>
+    <title>Resize-It v1.1.1: Modern Image Resizing Service</title>
     <!-- Tailwind CSS and DaisyUI -->
     <link
       href="https://cdn.jsdelivr.net/npm/daisyui@5"
@@ -50,7 +50,6 @@
             <li><a href="#api">API</a></li>
             <li><a href="#sdk">SDK</a></li>
             <li><a href="#installation">Installation</a></li>
-            <li><a href="#docs">Documentation</a></li>
             <li><a href="#community">Community</a></li>
           </ul>
         </div>
@@ -78,7 +77,6 @@
           <li><a href="#api">API</a></li>
           <li><a href="#sdk">SDK</a></li>
           <li><a href="#installation">Installation</a></li>
-          <li><a href="#docs">Documentation</a></li>
           <li><a href="#community">Community</a></li>
         </ul>
       </div>
@@ -111,13 +109,13 @@
         <div class="mockup-code max-w-md">
           <pre
             data-prefix="$"
-          ><code>bun install @karnak19/resize-it-sdk</code></pre>
+          ><code>bun install @karnak19/resize-it-sdk@1.1.1</code></pre>
           <pre
             data-prefix="$"
-          ><code>curl "http://localhost:3000/resize/image.jpg?width=800&format=webp"</code></pre>
+          ><code>curl "http://localhost:3000/images/resize/image.jpg?width=800&format=webp"</code></pre>
         </div>
         <div>
-          <h1 class="text-5xl font-bold">Resize-it</h1>
+          <h1 class="text-5xl font-bold">Resize-it v1.1.1</h1>
           <p class="py-6 text-xl">
             Open-source, high-performance image resizing and optimization
             service built with Bun and Elysia. Self-host your own image
@@ -143,7 +141,13 @@
               </svg>
               Star on GitHub
             </a>
-            <button class="btn btn-outline">View Documentation</button>
+            <a
+              href="https://github.com/karnak19/resize-it#readme"
+              target="_blank"
+              class="btn btn-outline"
+            >
+              View README
+            </a>
           </div>
         </div>
       </div>
@@ -414,7 +418,7 @@
           <div class="card bg-base-200 shadow-xl">
             <div class="card-body">
               <h3 class="card-title text-2xl mb-4">Deploy Anywhere</h3>
-              <div class="grid grid-cols-2 gap-4">
+              <div class="grid grid-cols-3 gap-4">
                 <div
                   class="flex flex-col items-center p-4 bg-base-300 rounded-box"
                 >
@@ -458,25 +462,6 @@
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-10 w-10 mb-2 text-accent"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <span>Kubernetes</span>
-                </div>
-                <div
-                  class="flex flex-col items-center p-4 bg-base-300 rounded-box"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
                     class="h-10 w-10 mb-2 text-info"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -509,7 +494,7 @@
             <h3 class="text-2xl font-bold mb-4">Image Operations</h3>
             <div class="mb-6">
               <div class="badge badge-primary mb-2">GET</div>
-              <p class="text-lg font-mono">/resize/:path</p>
+              <p class="text-lg font-mono">/images/resize/:path</p>
               <p class="mt-2">
                 Resize and transform an image with various parameters
               </p>
@@ -526,7 +511,7 @@
               </li>
               <li>
                 <span class="font-mono text-primary">format</span> - Output
-                format (webp, jpeg, png)
+                format (webp, jpeg, png, avif)
               </li>
               <li>
                 <span class="font-mono text-primary">quality</span> - Output
@@ -551,13 +536,98 @@
             ><code>curl "http://localhost:3000/resize/banner.jpg?width=1200&quality=85&rotate=90"</code></pre>
           </div>
         </div>
+
+        <!-- Swagger Documentation Section -->
+        <div class="mt-16 bg-base-300 p-8 rounded-box">
+          <div class="flex flex-col md:flex-row items-center gap-6">
+            <div class="flex-1">
+              <h3 class="text-2xl font-bold mb-4">OpenAPI Documentation</h3>
+              <p class="mb-4">
+                Resize-it comes with built-in Swagger documentation, making it
+                easy to explore and test the API.
+              </p>
+              <p class="mb-4">
+                Access the interactive API documentation at
+                <span class="font-mono text-primary">/swagger</span> endpoint.
+              </p>
+              <div class="flex gap-4 mt-6">
+                <a
+                  href="http://localhost:3000/swagger"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  View Swagger Docs
+                </a>
+              </div>
+            </div>
+            <div class="flex-1">
+              <div class="mockup-browser border bg-base-100">
+                <div class="mockup-browser-toolbar">
+                  <div class="input">http://localhost:3000/swagger</div>
+                </div>
+                <div
+                  class="px-4 py-8 bg-base-200 flex items-center justify-center"
+                >
+                  <div class="text-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-16 w-16 mx-auto mb-4 text-primary"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                    <p class="font-bold">Interactive API Documentation</p>
+                    <p class="text-sm mt-2">
+                      Explore endpoints, test requests, and view response
+                      schemas
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-6">
+            <h4 class="text-xl font-bold mb-2">Features:</h4>
+            <ul class="grid grid-cols-1 md:grid-cols-2 gap-2 list-disc pl-5">
+              <li>Interactive API explorer</li>
+              <li>Request/response schema documentation</li>
+              <li>Try-it-out functionality</li>
+              <li>OpenAPI 3.0 specification</li>
+              <li>Authentication support</li>
+              <li>Downloadable API specification</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- SDK Section -->
     <div id="sdk" class="py-16 bg-base-100">
       <div class="container mx-auto px-4">
-        <h2 class="text-3xl font-bold text-center mb-12">Official SDK</h2>
+        <h2 class="text-3xl font-bold text-center mb-12">
+          Official SDK v1.1.1
+        </h2>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div class="mockup-code">
             <pre
@@ -578,7 +648,7 @@
             ><code>// Generate a resized image URL</code></pre>
             <pre
               data-prefix="9"
-            ><code>const imageUrl = client.getImageUrl('image.jpg', {</code></pre>
+            ><code>const imageUrl = client.getResizeUrl('image.jpg', {</code></pre>
             <pre data-prefix="10"><code>  width: 800,</code></pre>
             <pre data-prefix="11"><code>  height: 600,</code></pre>
             <pre data-prefix="12"><code>  format: 'webp',</code></pre>
@@ -597,11 +667,11 @@
               <div class="mockup-code mb-4">
                 <pre
                   data-prefix="$"
-                ><code>npm install @karnak19/resize-it-sdk</code></pre>
+                ><code>npm install @karnak19/resize-it-sdk@1.1.1</code></pre>
                 <pre data-prefix="$"><code># or</code></pre>
                 <pre
                   data-prefix="$"
-                ><code>bun install @karnak19/resize-it-sdk</code></pre>
+                ><code>bun install @karnak19/resize-it-sdk@1.1.1</code></pre>
               </div>
             </div>
 
@@ -610,10 +680,442 @@
               <ul class="list-disc pl-5 space-y-2">
                 <li>Type-safe API with TypeScript support</li>
                 <li>URL builder for all transformation options</li>
+                <li>Image upload functionality</li>
                 <li>Automatic error handling and retries</li>
                 <li>Lightweight with zero dependencies</li>
               </ul>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SDK Documentation Section -->
+    <div class="py-16 bg-base-200">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-12">SDK Documentation</h2>
+
+        <!-- SDK Class Overview -->
+        <div class="mb-12">
+          <h3 class="text-2xl font-bold mb-4">ResizeIt Class</h3>
+          <p class="mb-4">
+            The SDK provides a simple yet powerful interface for interacting
+            with the Resize-it service. The main class,
+            <code class="bg-base-300 px-1 rounded">ResizeIt</code>, offers
+            methods for uploading images, generating resize URLs, and retrieving
+            resized images directly.
+          </p>
+
+          <div class="mockup-code mb-6">
+            <pre data-prefix="1"><code>/**</code></pre>
+            <pre
+              data-prefix="2"
+            ><code> * ResizeIt SDK for uploading and retrieving images</code></pre>
+            <pre data-prefix="3"><code> */</code></pre>
+            <pre data-prefix="4"><code>export class ResizeIt {</code></pre>
+            <pre
+              data-prefix="5"
+            ><code>  private config: ResizeItConfig;</code></pre>
+            <pre data-prefix="6"><code>  </code></pre>
+            <pre data-prefix="7"><code>  /**</code></pre>
+            <pre
+              data-prefix="8"
+            ><code>   * Create a new ResizeIt SDK instance</code></pre>
+            <pre
+              data-prefix="9"
+            ><code>   * @param config Configuration options</code></pre>
+            <pre data-prefix="10"><code>   */</code></pre>
+            <pre
+              data-prefix="11"
+            ><code>  constructor(config: ResizeItConfig) {</code></pre>
+            <pre data-prefix="12"><code>    // ...</code></pre>
+            <pre data-prefix="13"><code>  }</code></pre>
+            <pre data-prefix="14"><code>}</code></pre>
+          </div>
+        </div>
+
+        <!-- Configuration Options -->
+        <div class="mb-12">
+          <h3 class="text-2xl font-bold mb-4">Configuration</h3>
+          <p class="mb-4">
+            When initializing the SDK, you can provide the following
+            configuration options:
+          </p>
+
+          <div class="overflow-x-auto">
+            <table class="table w-full">
+              <thead>
+                <tr>
+                  <th>Option</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                  <th>Default</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>baseUrl</code></td>
+                  <td>string</td>
+                  <td>The base URL of your Resize-it service</td>
+                  <td>Required</td>
+                </tr>
+                <tr>
+                  <td><code>timeout</code></td>
+                  <td>number</td>
+                  <td>Request timeout in milliseconds</td>
+                  <td>30000 (30 seconds)</td>
+                </tr>
+                <tr>
+                  <td><code>apiKey</code></td>
+                  <td>string</td>
+                  <td>API key for authentication (if enabled on the server)</td>
+                  <td>undefined</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mockup-code mt-6">
+            <pre
+              data-prefix="1"
+            ><code>const client = new ResizeIt({</code></pre>
+            <pre
+              data-prefix="2"
+            ><code>  baseUrl: 'https://resize-it.example.com',</code></pre>
+            <pre
+              data-prefix="3"
+            ><code>  timeout: 60000, // 60 seconds</code></pre>
+            <pre data-prefix="4"><code>  apiKey: 'your-api-key'</code></pre>
+            <pre data-prefix="5"><code>});</code></pre>
+          </div>
+        </div>
+
+        <!-- Methods Documentation -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- Upload Image Method -->
+          <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+              <h3 class="card-title text-xl">uploadImage()</h3>
+              <p class="mb-4">
+                Upload an image to the Resize-it service. Supports Buffer, Blob,
+                or base64 string inputs.
+              </p>
+
+              <h4 class="font-bold mt-4 mb-2">Parameters:</h4>
+              <ul class="list-disc pl-5 space-y-1">
+                <li>
+                  <code>imageData</code>: Buffer | Blob | string - The image
+                  data to upload
+                </li>
+                <li>
+                  <code>options</code>: UploadOptions - Upload configuration
+                  options
+                </li>
+              </ul>
+
+              <h4 class="font-bold mt-4 mb-2">Returns:</h4>
+              <p>
+                Promise&lt;UploadResponse&gt; - A promise resolving to the
+                upload response
+              </p>
+
+              <h4 class="font-bold mt-4 mb-2">Example:</h4>
+              <div class="mockup-code mt-2">
+                <pre
+                  data-prefix="1"
+                ><code>// Upload an image from a file input</code></pre>
+                <pre
+                  data-prefix="2"
+                ><code>const fileInput = document.querySelector('input[type="file"]');</code></pre>
+                <pre
+                  data-prefix="3"
+                ><code>const file = fileInput.files[0];</code></pre>
+                <pre data-prefix="4"><code></code></pre>
+                <pre
+                  data-prefix="5"
+                ><code>const response = await client.uploadImage(file, {</code></pre>
+                <pre
+                  data-prefix="6"
+                ><code>  filename: 'custom-name.jpg',</code></pre>
+                <pre data-prefix="7"><code>  folder: 'uploads/2023'</code></pre>
+                <pre data-prefix="8"><code>});</code></pre>
+                <pre data-prefix="9"><code></code></pre>
+                <pre
+                  data-prefix="10"
+                ><code>console.log(response.path); // Path to the uploaded image</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Get Resize URL Method -->
+          <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+              <h3 class="card-title text-xl">getResizeUrl()</h3>
+              <p class="mb-4">
+                Generate a URL for a resized version of an image with the
+                specified options.
+              </p>
+
+              <h4 class="font-bold mt-4 mb-2">Parameters:</h4>
+              <ul class="list-disc pl-5 space-y-1">
+                <li>
+                  <code>imagePath</code>: string - Path to the image on the
+                  server
+                </li>
+                <li>
+                  <code>options</code>: ResizeOptions - Resize configuration
+                  options
+                </li>
+              </ul>
+
+              <h4 class="font-bold mt-4 mb-2">Returns:</h4>
+              <p>string - The URL to the resized image</p>
+
+              <h4 class="font-bold mt-4 mb-2">Example:</h4>
+              <div class="mockup-code mt-2">
+                <pre
+                  data-prefix="1"
+                ><code>const imageUrl = client.getResizeUrl('uploads/profile.jpg', {</code></pre>
+                <pre data-prefix="2"><code>  width: 400,</code></pre>
+                <pre data-prefix="3"><code>  height: 400,</code></pre>
+                <pre data-prefix="4"><code>  format: 'webp',</code></pre>
+                <pre data-prefix="5"><code>  quality: 85,</code></pre>
+                <pre data-prefix="6"><code>  grayscale: true</code></pre>
+                <pre data-prefix="7"><code>});</code></pre>
+                <pre data-prefix="8"><code></code></pre>
+                <pre data-prefix="9"><code>// Use in an img tag</code></pre>
+                <pre
+                  data-prefix="10"
+                ><code>const img = document.createElement('img');</code></pre>
+                <pre data-prefix="11"><code>img.src = imageUrl;</code></pre>
+                <pre
+                  data-prefix="12"
+                ><code>document.body.appendChild(img);</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Get Resized Image Method -->
+          <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+              <h3 class="card-title text-xl">getResizedImage()</h3>
+              <p class="mb-4">
+                Fetch a resized image directly as a Blob, useful for further
+                processing or displaying in the browser.
+              </p>
+
+              <h4 class="font-bold mt-4 mb-2">Parameters:</h4>
+              <ul class="list-disc pl-5 space-y-1">
+                <li>
+                  <code>imagePath</code>: string - Path to the image on the
+                  server
+                </li>
+                <li>
+                  <code>options</code>: ResizeOptions - Resize configuration
+                  options
+                </li>
+              </ul>
+
+              <h4 class="font-bold mt-4 mb-2">Returns:</h4>
+              <p>Promise&lt;Blob&gt; - A promise resolving to the image blob</p>
+
+              <h4 class="font-bold mt-4 mb-2">Example:</h4>
+              <div class="mockup-code mt-2">
+                <pre
+                  data-prefix="1"
+                ><code>// Get a resized image as a Blob</code></pre>
+                <pre
+                  data-prefix="2"
+                ><code>const imageBlob = await client.getResizedImage('banner.jpg', {</code></pre>
+                <pre data-prefix="3"><code>  width: 1200,</code></pre>
+                <pre data-prefix="4"><code>  format: 'avif',</code></pre>
+                <pre data-prefix="5"><code>  quality: 90</code></pre>
+                <pre data-prefix="6"><code>});</code></pre>
+                <pre data-prefix="7"><code></code></pre>
+                <pre
+                  data-prefix="8"
+                ><code>// Create an object URL for the blob</code></pre>
+                <pre
+                  data-prefix="9"
+                ><code>const objectUrl = URL.createObjectURL(imageBlob);</code></pre>
+                <pre data-prefix="10"><code></code></pre>
+                <pre
+                  data-prefix="11"
+                ><code>// Use in an img element</code></pre>
+                <pre
+                  data-prefix="12"
+                ><code>document.querySelector('#banner').src = objectUrl;</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resize Options -->
+          <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+              <h3 class="card-title text-xl">Resize Options</h3>
+              <p class="mb-4">
+                The SDK supports all transformation options available in the
+                Resize-it API.
+              </p>
+
+              <h4 class="font-bold mt-4 mb-2">Available Options:</h4>
+              <div class="overflow-x-auto">
+                <table class="table w-full">
+                  <thead>
+                    <tr>
+                      <th>Option</th>
+                      <th>Type</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>width</code></td>
+                      <td>number</td>
+                      <td>Target width in pixels</td>
+                    </tr>
+                    <tr>
+                      <td><code>height</code></td>
+                      <td>number</td>
+                      <td>Target height in pixels</td>
+                    </tr>
+                    <tr>
+                      <td><code>format</code></td>
+                      <td>string</td>
+                      <td>Output format (webp, jpeg, png, avif)</td>
+                    </tr>
+                    <tr>
+                      <td><code>quality</code></td>
+                      <td>number</td>
+                      <td>Output quality (1-100)</td>
+                    </tr>
+                    <tr>
+                      <td><code>fit</code></td>
+                      <td>string</td>
+                      <td>
+                        Resize strategy (cover, contain, fill, inside, outside)
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><code>position</code></td>
+                      <td>string</td>
+                      <td>
+                        Position for cropping (top, right top, right, etc.)
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><code>rotate</code></td>
+                      <td>number</td>
+                      <td>Rotation angle in degrees</td>
+                    </tr>
+                    <tr>
+                      <td><code>flip</code></td>
+                      <td>boolean</td>
+                      <td>Flip the image horizontally</td>
+                    </tr>
+                    <tr>
+                      <td><code>flop</code></td>
+                      <td>boolean</td>
+                      <td>Flip the image vertically</td>
+                    </tr>
+                    <tr>
+                      <td><code>grayscale</code></td>
+                      <td>boolean</td>
+                      <td>Convert to grayscale</td>
+                    </tr>
+                    <tr>
+                      <td><code>blur</code></td>
+                      <td>number</td>
+                      <td>Apply Gaussian blur (sigma value)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Advanced Usage -->
+        <div class="mt-12">
+          <h3 class="text-2xl font-bold mb-6">Advanced Usage Examples</h3>
+
+          <div class="tabs tabs-boxed mb-6">
+            <a class="tab tab-active">Upload & Resize</a>
+            <a class="tab">Image Gallery</a>
+            <a class="tab">Error Handling</a>
+          </div>
+
+          <div class="mockup-code">
+            <pre
+              data-prefix="1"
+            ><code>// Example: Upload an image and generate multiple sizes</code></pre>
+            <pre
+              data-prefix="2"
+            ><code>async function processImage(file) {</code></pre>
+            <pre
+              data-prefix="3"
+            ><code>  const client = new ResizeIt({</code></pre>
+            <pre
+              data-prefix="4"
+            ><code>    baseUrl: 'https://resize-it.example.com'</code></pre>
+            <pre data-prefix="5"><code>  });</code></pre>
+            <pre data-prefix="6"><code>  </code></pre>
+            <pre data-prefix="7"><code>  try {</code></pre>
+            <pre
+              data-prefix="8"
+            ><code>    // 1. Upload the original image</code></pre>
+            <pre
+              data-prefix="9"
+            ><code>    const uploadResult = await client.uploadImage(file, {</code></pre>
+            <pre data-prefix="10"><code>      folder: 'products'</code></pre>
+            <pre data-prefix="11"><code>    });</code></pre>
+            <pre data-prefix="12"><code>    </code></pre>
+            <pre
+              data-prefix="13"
+            ><code>    // 2. Generate URLs for different sizes</code></pre>
+            <pre
+              data-prefix="14"
+            ><code>    const imagePath = uploadResult.path;</code></pre>
+            <pre data-prefix="15"><code>    </code></pre>
+            <pre
+              data-prefix="16"
+            ><code>    const thumbnailUrl = client.getResizeUrl(imagePath, {</code></pre>
+            <pre data-prefix="17"><code>      width: 200,</code></pre>
+            <pre data-prefix="18"><code>      height: 200,</code></pre>
+            <pre data-prefix="19"><code>      fit: 'cover',</code></pre>
+            <pre data-prefix="20"><code>      format: 'webp'</code></pre>
+            <pre data-prefix="21"><code>    });</code></pre>
+            <pre data-prefix="22"><code>    </code></pre>
+            <pre
+              data-prefix="23"
+            ><code>    const previewUrl = client.getResizeUrl(imagePath, {</code></pre>
+            <pre data-prefix="24"><code>      width: 800,</code></pre>
+            <pre data-prefix="25"><code>      format: 'webp'</code></pre>
+            <pre data-prefix="26"><code>    });</code></pre>
+            <pre data-prefix="27"><code>    </code></pre>
+            <pre
+              data-prefix="28"
+            ><code>    const fullsizeUrl = client.getResizeUrl(imagePath, {</code></pre>
+            <pre data-prefix="29"><code>      width: 1920,</code></pre>
+            <pre data-prefix="30"><code>      format: 'webp',</code></pre>
+            <pre data-prefix="31"><code>      quality: 90</code></pre>
+            <pre data-prefix="32"><code>    });</code></pre>
+            <pre data-prefix="33"><code>    </code></pre>
+            <pre data-prefix="34"><code>    return {</code></pre>
+            <pre data-prefix="35"><code>      original: imagePath,</code></pre>
+            <pre
+              data-prefix="36"
+            ><code>      thumbnail: thumbnailUrl,</code></pre>
+            <pre data-prefix="37"><code>      preview: previewUrl,</code></pre>
+            <pre data-prefix="38"><code>      fullsize: fullsizeUrl</code></pre>
+            <pre data-prefix="39"><code>    };</code></pre>
+            <pre data-prefix="40"><code>  } catch (error) {</code></pre>
+            <pre
+              data-prefix="41"
+            ><code>    console.error('Failed to process image:', error);</code></pre>
+            <pre data-prefix="42"><code>    throw error;</code></pre>
+            <pre data-prefix="43"><code>  }</code></pre>
+            <pre data-prefix="44"><code>}</code></pre>
           </div>
         </div>
       </div>
@@ -759,20 +1261,39 @@
                   </tr>
                 </thead>
                 <tbody>
+                  <!-- Server Configuration -->
+                  <tr class="bg-base-200">
+                    <td colspan="3" class="font-bold">Server Configuration</td>
+                  </tr>
+                  <tr>
+                    <td>HOST</td>
+                    <td>Server host</td>
+                    <td>0.0.0.0</td>
+                  </tr>
                   <tr>
                     <td>PORT</td>
                     <td>Server port</td>
                     <td>3000</td>
                   </tr>
-                  <tr>
-                    <td>STORAGE_TYPE</td>
-                    <td>Storage backend (local, s3)</td>
-                    <td>local</td>
+
+                  <!-- Storage Configuration -->
+                  <tr class="bg-base-200">
+                    <td colspan="3" class="font-bold">Storage Configuration</td>
                   </tr>
                   <tr>
                     <td>S3_ENDPOINT</td>
                     <td>S3 endpoint URL</td>
-                    <td>-</td>
+                    <td>localhost</td>
+                  </tr>
+                  <tr>
+                    <td>S3_PORT</td>
+                    <td>S3 port</td>
+                    <td>9000</td>
+                  </tr>
+                  <tr>
+                    <td>S3_USE_SSL</td>
+                    <td>Use SSL for S3 connection</td>
+                    <td>false</td>
                   </tr>
                   <tr>
                     <td>S3_REGION</td>
@@ -782,17 +1303,44 @@
                   <tr>
                     <td>S3_BUCKET</td>
                     <td>S3 bucket name</td>
-                    <td>resize-it</td>
+                    <td>images</td>
                   </tr>
                   <tr>
                     <td>S3_ACCESS_KEY</td>
                     <td>S3 access key</td>
-                    <td>-</td>
+                    <td>minioadmin</td>
                   </tr>
                   <tr>
                     <td>S3_SECRET_KEY</td>
                     <td>S3 secret key</td>
-                    <td>-</td>
+                    <td>minioadmin</td>
+                  </tr>
+
+                  <!-- Image Processing Configuration -->
+                  <tr class="bg-base-200">
+                    <td colspan="3" class="font-bold">
+                      Image Processing Configuration
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>MAX_WIDTH</td>
+                    <td>Maximum allowed image width</td>
+                    <td>1920</td>
+                  </tr>
+                  <tr>
+                    <td>MAX_HEIGHT</td>
+                    <td>Maximum allowed image height</td>
+                    <td>1080</td>
+                  </tr>
+                  <tr>
+                    <td>IMAGE_QUALITY</td>
+                    <td>Default image quality (1-100)</td>
+                    <td>80</td>
+                  </tr>
+
+                  <!-- Cache Configuration -->
+                  <tr class="bg-base-200">
+                    <td colspan="3" class="font-bold">Cache Configuration</td>
                   </tr>
                   <tr>
                     <td>CACHE_ENABLED</td>
@@ -800,14 +1348,83 @@
                     <td>true</td>
                   </tr>
                   <tr>
-                    <td>CACHE_TTL</td>
+                    <td>CACHE_MAX_AGE</td>
                     <td>Cache time-to-live (seconds)</td>
                     <td>86400</td>
                   </tr>
+
+                  <!-- Dragonfly Configuration -->
+                  <tr class="bg-base-200">
+                    <td colspan="3" class="font-bold">
+                      Dragonfly Configuration
+                    </td>
+                  </tr>
                   <tr>
-                    <td>REDIS_URL</td>
-                    <td>Redis/Dragonfly connection URL</td>
-                    <td>redis://localhost:6379</td>
+                    <td>DRAGONFLY_ENABLED</td>
+                    <td>Enable Dragonfly caching</td>
+                    <td>false</td>
+                  </tr>
+                  <tr>
+                    <td>DRAGONFLY_HOST</td>
+                    <td>Dragonfly host</td>
+                    <td>localhost</td>
+                  </tr>
+                  <tr>
+                    <td>DRAGONFLY_PORT</td>
+                    <td>Dragonfly port</td>
+                    <td>6379</td>
+                  </tr>
+                  <tr>
+                    <td>DRAGONFLY_CACHE_TTL</td>
+                    <td>Dragonfly cache TTL (seconds)</td>
+                    <td>86400</td>
+                  </tr>
+
+                  <!-- Security Configuration -->
+                  <tr class="bg-base-200">
+                    <td colspan="3" class="font-bold">
+                      Security Configuration
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>ENABLE_API_KEY_AUTH</td>
+                    <td>Enable API key authentication</td>
+                    <td>false</td>
+                  </tr>
+                  <tr>
+                    <td>API_KEYS</td>
+                    <td>Comma-separated list of valid API keys</td>
+                    <td>dev-api-key</td>
+                  </tr>
+                  <tr>
+                    <td>RATE_LIMIT_ENABLED</td>
+                    <td>Enable rate limiting</td>
+                    <td>true</td>
+                  </tr>
+                  <tr>
+                    <td>RATE_LIMIT_WINDOW_MS</td>
+                    <td>Rate limit window in milliseconds</td>
+                    <td>60000</td>
+                  </tr>
+                  <tr>
+                    <td>RATE_LIMIT_MAX</td>
+                    <td>Maximum requests per window</td>
+                    <td>100</td>
+                  </tr>
+                  <tr>
+                    <td>CORS_ALLOWED_ORIGINS</td>
+                    <td>Comma-separated list of allowed origins</td>
+                    <td>*</td>
+                  </tr>
+
+                  <!-- Debug Configuration -->
+                  <tr class="bg-base-200">
+                    <td colspan="3" class="font-bold">Debug Configuration</td>
+                  </tr>
+                  <tr>
+                    <td>DEBUG</td>
+                    <td>Enable debug mode</td>
+                    <td>false</td>
                   </tr>
                 </tbody>
               </table>
@@ -825,8 +1442,8 @@
             Ready to Optimize Your Images?
           </h2>
           <p class="mb-8">
-            Join the community of developers who trust Resize-it for their image
-            processing needs.
+            Join the community of developers who trust Resize-it v1.1.1 for
+            their image processing needs.
           </p>
           <div class="flex flex-col sm:flex-row gap-4 justify-center">
             <a
@@ -849,18 +1466,19 @@
               Star on GitHub
             </a>
             <a
-              href="https://docs.resize-it.dev"
+              href="https://github.com/karnak19/resize-it#readme"
               target="_blank"
               class="btn btn-outline"
-              >View Documentation</a
             >
+              View README
+            </a>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Footer -->
-    <footer class="footer p-10 bg-neutral text-neutral-content">
+    <footer class="footer p-10 bg-neutral text-neutral-content flex">
       <nav>
         <h6 class="footer-title">Project</h6>
         <a href="#features" class="link link-hover">Features</a>
@@ -876,51 +1494,12 @@
           class="link link-hover"
           >GitHub</a
         >
-        <a
-          href="https://discord.gg/resize-it"
-          target="_blank"
-          class="link link-hover"
-          >Discord</a
-        >
-        <a
-          href="https://twitter.com/resizeitdev"
-          target="_blank"
-          class="link link-hover"
-          >Twitter</a
-        >
-      </nav>
-      <nav>
-        <h6 class="footer-title">Legal</h6>
-        <a class="link link-hover">Terms of use</a>
-        <a class="link link-hover">Privacy policy</a>
-        <a class="link link-hover">License</a>
-      </nav>
-      <nav>
-        <h6 class="footer-title">Resources</h6>
-        <a
-          href="https://docs.resize-it.dev"
-          target="_blank"
-          class="link link-hover"
-          >Documentation</a
-        >
-        <a
-          href="https://github.com/karnak19/resize-it/blob/main/CHANGELOG.md"
-          target="_blank"
-          class="link link-hover"
-          >Changelog</a
-        >
-        <a
-          href="https://github.com/karnak19/resize-it/blob/main/CONTRIBUTING.md"
-          target="_blank"
-          class="link link-hover"
-          >Contributing</a
-        >
       </nav>
     </footer>
     <footer class="footer footer-center p-4 bg-base-300 text-base-content">
       <aside>
         <p>
-          Released under the MIT License - Copyright © 2024 Resize-it
+          Released under the MIT License - Copyright © 2025 Resize-it
           Contributors
         </p>
       </aside>
