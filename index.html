@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dracula">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resize-It: Modern Image Resizing Service</title>
+    <!-- Tailwind CSS and DaisyUI -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@5"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@5.0.0/themes.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+    </style>
+  </head>
+  <body class="">
+    <!-- Navbar -->
+    <div class="navbar bg-base-100 sticky top-0 z-50">
+      <div class="navbar-start">
+        <div class="dropdown">
+          <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h8m-8 6h16"
+              />
+            </svg>
+          </div>
+          <ul
+            tabindex="0"
+            class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
+          >
+            <li><a href="#features">Features</a></li>
+            <li><a href="#api">API</a></li>
+            <li><a href="#sdk">SDK</a></li>
+            <li><a href="#installation">Installation</a></li>
+            <li><a href="#docs">Documentation</a></li>
+            <li><a href="#community">Community</a></li>
+          </ul>
+        </div>
+        <a class="btn btn-ghost text-xl">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6 mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+          Resize-it
+        </a>
+      </div>
+      <div class="navbar-center hidden lg:flex">
+        <ul class="menu menu-horizontal px-1">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#api">API</a></li>
+          <li><a href="#sdk">SDK</a></li>
+          <li><a href="#installation">Installation</a></li>
+          <li><a href="#docs">Documentation</a></li>
+          <li><a href="#community">Community</a></li>
+        </ul>
+      </div>
+      <div class="navbar-end">
+        <a
+          href="https://github.com/karnak19/resize-it"
+          target="_blank"
+          class="btn btn-primary"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            class="mr-2 h-5 w-5"
+          >
+            <path
+              d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+            />
+          </svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero min-h-[80vh] bg-base-200">
+      <div class="hero-content flex-col lg:flex-row-reverse">
+        <div class="mockup-code max-w-md">
+          <pre
+            data-prefix="$"
+          ><code>bun install @karnak19/resize-it-sdk</code></pre>
+          <pre
+            data-prefix="$"
+          ><code>curl "http://localhost:3000/resize/image.jpg?width=800&format=webp"</code></pre>
+        </div>
+        <div>
+          <h1 class="text-5xl font-bold">Resize-it</h1>
+          <p class="py-6 text-xl">
+            Open-source, high-performance image resizing and optimization
+            service built with Bun and Elysia. Self-host your own image
+            transformation API.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4">
+            <a
+              href="https://github.com/karnak19/resize-it"
+              target="_blank"
+              class="btn btn-primary"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                class="mr-2 h-5 w-5"
+              >
+                <path
+                  d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+                />
+              </svg>
+              Star on GitHub
+            </a>
+            <button class="btn btn-outline">View Documentation</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="bg-base-100 py-12">
+      <div class="container mx-auto px-4">
+        <div class="stats shadow w-full">
+          <div class="stat">
+            <div class="stat-figure text-primary">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-8 w-8"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+            </div>
+            <div class="stat-title">Processing Speed</div>
+            <div class="stat-value text-primary">10x</div>
+            <div class="stat-desc">Faster than traditional solutions</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-figure text-secondary">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-8 w-8"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                />
+              </svg>
+            </div>
+            <div class="stat-title">Open Source</div>
+            <div class="stat-value text-secondary">100%</div>
+            <div class="stat-desc">Free and open source</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-figure text-accent">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-8 w-8"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                />
+              </svg>
+            </div>
+            <div class="stat-title">File Size Reduction</div>
+            <div class="stat-value text-accent">70%</div>
+            <div class="stat-desc">Average optimization</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Features Section -->
+    <div id="features" class="py-16 bg-base-200">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-12">
+          Why Choose Resize-it?
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- Feature Card 1 -->
+          <div class="card bg-base-100 shadow-xl">
+            <figure class="px-10 pt-10">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-20 w-20 text-primary"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+            </figure>
+            <div class="card-body items-center text-center">
+              <h2 class="card-title">Lightning Fast</h2>
+              <p>
+                Built with Bun and Elysia for maximum performance. Resize and
+                optimize images in milliseconds.
+              </p>
+            </div>
+          </div>
+
+          <!-- Feature Card 2 -->
+          <div class="card bg-base-100 shadow-xl">
+            <figure class="px-10 pt-10">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-20 w-20 text-secondary"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"
+                />
+              </svg>
+            </figure>
+            <div class="card-body items-center text-center">
+              <h2 class="card-title">S3 Integration</h2>
+              <p>
+                Uses Bun's lightweight, high-performance built-in S3 client for
+                efficient storage operations.
+              </p>
+            </div>
+          </div>
+
+          <!-- Feature Card 3 -->
+          <div class="card bg-base-100 shadow-xl">
+            <figure class="px-10 pt-10">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-20 w-20 text-accent"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </figure>
+            <div class="card-body items-center text-center">
+              <h2 class="card-title">Flexible Transformations</h2>
+              <p>
+                Resize, crop, rotate, flip, and apply filters to your images
+                with simple API parameters.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Self-hosting Benefits -->
+    <div class="py-16 bg-base-100">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-12">
+          Benefits of Self-Hosting
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          <div>
+            <ul class="space-y-6">
+              <li class="flex items-start">
+                <div class="bg-primary rounded-full p-2 mr-4 mt-1">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6 text-primary-content"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold mb-2">
+                    Complete Privacy & Control
+                  </h3>
+                  <p>
+                    Keep your images and data on your own infrastructure. No
+                    third-party services accessing your content.
+                  </p>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <div class="bg-secondary rounded-full p-2 mr-4 mt-1">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6 text-secondary-content"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold mb-2">
+                    No Usage Limits or Costs
+                  </h3>
+                  <p>
+                    Process as many images as you need without worrying about
+                    monthly quotas or unexpected bills.
+                  </p>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <div class="bg-accent rounded-full p-2 mr-4 mt-1">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6 text-accent-content"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold mb-2">
+                    Customizable & Extensible
+                  </h3>
+                  <p>
+                    Modify the code to fit your specific needs. Add custom
+                    transformations or integrate with your existing systems.
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <div class="card bg-base-200 shadow-xl">
+            <div class="card-body">
+              <h3 class="card-title text-2xl mb-4">Deploy Anywhere</h3>
+              <div class="grid grid-cols-2 gap-4">
+                <div
+                  class="flex flex-col items-center p-4 bg-base-300 rounded-box"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-10 w-10 mb-2 text-primary"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"
+                    />
+                  </svg>
+                  <span>Your Server</span>
+                </div>
+                <div
+                  class="flex flex-col items-center p-4 bg-base-300 rounded-box"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-10 w-10 mb-2 text-secondary"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                    />
+                  </svg>
+                  <span>Docker</span>
+                </div>
+                <div
+                  class="flex flex-col items-center p-4 bg-base-300 rounded-box"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-10 w-10 mb-2 text-accent"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <span>Kubernetes</span>
+                </div>
+                <div
+                  class="flex flex-col items-center p-4 bg-base-300 rounded-box"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-10 w-10 mb-2 text-info"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
+                    />
+                  </svg>
+                  <span>Cloud</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- API Section -->
+    <div id="api" class="py-16 bg-base-200">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-12">
+          Simple and Powerful API
+        </h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+          <div>
+            <h3 class="text-2xl font-bold mb-4">Image Operations</h3>
+            <div class="mb-6">
+              <div class="badge badge-primary mb-2">GET</div>
+              <p class="text-lg font-mono">/resize/:path</p>
+              <p class="mt-2">
+                Resize and transform an image with various parameters
+              </p>
+            </div>
+
+            <h4 class="text-xl font-bold mb-2">Query Parameters:</h4>
+            <ul class="list-disc pl-5 space-y-2">
+              <li>
+                <span class="font-mono text-primary">width</span> - Target width
+              </li>
+              <li>
+                <span class="font-mono text-primary">height</span> - Target
+                height
+              </li>
+              <li>
+                <span class="font-mono text-primary">format</span> - Output
+                format (webp, jpeg, png)
+              </li>
+              <li>
+                <span class="font-mono text-primary">quality</span> - Output
+                quality (1-100)
+              </li>
+              <li>
+                <span class="font-mono text-primary">rotate</span>,
+                <span class="font-mono text-primary">flip</span>,
+                <span class="font-mono text-primary">grayscale</span>, etc.
+              </li>
+            </ul>
+          </div>
+          <div class="mockup-code">
+            <pre
+              data-prefix="$"
+            ><code>curl "http://localhost:3000/resize/image.jpg?width=800&format=webp"</code></pre>
+            <pre
+              data-prefix="$"
+            ><code>curl "http://localhost:3000/resize/profile.png?width=200&height=200&grayscale=true"</code></pre>
+            <pre
+              data-prefix="$"
+            ><code>curl "http://localhost:3000/resize/banner.jpg?width=1200&quality=85&rotate=90"</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SDK Section -->
+    <div id="sdk" class="py-16 bg-base-100">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-12">Official SDK</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div class="mockup-code">
+            <pre
+              data-prefix="1"
+            ><code>import { ResizeIt } from '@karnak19/resize-it-sdk';</code></pre>
+            <pre data-prefix="2"><code></code></pre>
+            <pre data-prefix="3"><code>// Initialize the client</code></pre>
+            <pre
+              data-prefix="4"
+            ><code>const client = new ResizeIt({</code></pre>
+            <pre
+              data-prefix="5"
+            ><code>  baseUrl: 'http://localhost:3000'</code></pre>
+            <pre data-prefix="6"><code>});</code></pre>
+            <pre data-prefix="7"><code></code></pre>
+            <pre
+              data-prefix="8"
+            ><code>// Generate a resized image URL</code></pre>
+            <pre
+              data-prefix="9"
+            ><code>const imageUrl = client.getImageUrl('image.jpg', {</code></pre>
+            <pre data-prefix="10"><code>  width: 800,</code></pre>
+            <pre data-prefix="11"><code>  height: 600,</code></pre>
+            <pre data-prefix="12"><code>  format: 'webp',</code></pre>
+            <pre data-prefix="13"><code>  quality: 90</code></pre>
+            <pre data-prefix="14"><code>});</code></pre>
+          </div>
+          <div>
+            <h3 class="text-2xl font-bold mb-4">@karnak19/resize-it-sdk</h3>
+            <p class="mb-4">
+              Our official SDK makes it easy to integrate Resize-it into your
+              applications. Available for JavaScript and TypeScript projects.
+            </p>
+
+            <div class="mb-6">
+              <h4 class="text-xl font-bold mb-2">Installation</h4>
+              <div class="mockup-code mb-4">
+                <pre
+                  data-prefix="$"
+                ><code>npm install @karnak19/resize-it-sdk</code></pre>
+                <pre data-prefix="$"><code># or</code></pre>
+                <pre
+                  data-prefix="$"
+                ><code>bun install @karnak19/resize-it-sdk</code></pre>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-xl font-bold mb-2">Features</h4>
+              <ul class="list-disc pl-5 space-y-2">
+                <li>Type-safe API with TypeScript support</li>
+                <li>URL builder for all transformation options</li>
+                <li>Automatic error handling and retries</li>
+                <li>Lightweight with zero dependencies</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Installation Section -->
+    <div id="installation" class="py-16 bg-base-200">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-12">Installation Guide</h2>
+
+        <!-- Prerequisites -->
+        <div class="alert alert-info mb-8">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            class="stroke-current shrink-0 w-6 h-6"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+          <div>
+            <h3 class="font-bold">Prerequisites</h3>
+            <p>
+              Before installing Resize-it, make sure you have the following:
+            </p>
+            <ul class="list-disc ml-6 mt-2">
+              <li>
+                Bun 1.0.0 or higher (<a
+                  href="https://bun.sh/docs/installation"
+                  class="link link-primary"
+                  target="_blank"
+                  >Installation Guide</a
+                >)
+              </li>
+              <li>Git</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div>
+            <h3 class="text-2xl font-bold mb-4">Standard Installation</h3>
+            <div class="steps steps-vertical">
+              <div class="step step-primary">
+                <div class="step-content">
+                  <h3 class="text-xl font-bold">Clone the Repository</h3>
+                  <div class="mockup-code mt-2 mb-4">
+                    <pre
+                      data-prefix="$"
+                    ><code>git clone https://github.com/karnak19/resize-it.git</code></pre>
+                    <pre data-prefix="$"><code>cd resize-it</code></pre>
+                  </div>
+                </div>
+              </div>
+              <div class="step step-primary">
+                <div class="step-content">
+                  <h3 class="text-xl font-bold">Install Dependencies</h3>
+                  <div class="mockup-code mt-2 mb-4">
+                    <pre data-prefix="$"><code>bun install</code></pre>
+                    <pre
+                      data-prefix="#"
+                    ><code># Or if you prefer npm</code></pre>
+                    <pre data-prefix="$"><code>npm install</code></pre>
+                  </div>
+                </div>
+              </div>
+              <div class="step step-primary">
+                <div class="step-content">
+                  <h3 class="text-xl font-bold">Configure Environment</h3>
+                  <div class="mockup-code mt-2 mb-4">
+                    <pre data-prefix="$"><code>cp .env.example .env</code></pre>
+                    <pre
+                      data-prefix="$"
+                    ><code>nano .env  # Edit with your configuration</code></pre>
+                  </div>
+                  <p class="text-sm mt-2">
+                    See the Configuration Options table for available settings.
+                  </p>
+                </div>
+              </div>
+              <div class="step step-primary">
+                <div class="step-content">
+                  <h3 class="text-xl font-bold">Start the Server</h3>
+                  <div class="mockup-code mt-2 mb-4">
+                    <pre
+                      data-prefix="$"
+                    ><code>bun run dev  # Development mode with hot reload</code></pre>
+                    <pre data-prefix="#"><code># or</code></pre>
+                    <pre
+                      data-prefix="$"
+                    ><code>bun run start  # Production mode</code></pre>
+                  </div>
+                  <p class="text-sm mt-2">
+                    The server will start at
+                    <span class="font-mono">http://localhost:3000</span> by
+                    default.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-2xl font-bold mb-4">Docker Installation</h3>
+            <p class="mb-4">
+              For containerized deployment, you can use our official Docker
+              image:
+            </p>
+            <div class="mockup-code mb-6">
+              <pre
+                data-prefix="$"
+              ><code>docker pull karnak19/resize-it:latest</code></pre>
+              <pre data-prefix="$"><code>docker run -p 3000:3000 \
+  -v ./images:/app/images \
+  -v ./config:/app/config \
+  -e S3_ENDPOINT=your-s3-endpoint \
+  -e S3_ACCESS_KEY=your-access-key \
+  -e S3_SECRET_KEY=your-secret-key \
+  karnak19/resize-it:latest</code></pre>
+            </div>
+
+            <h3 class="text-2xl font-bold mb-4">Docker Compose</h3>
+            <p class="mb-4">For a complete setup with MinIO and Dragonfly:</p>
+            <div class="mockup-code mb-6">
+              <pre
+                data-prefix="$"
+              ><code>wget https://raw.githubusercontent.com/karnak19/resize-it/main/docker-compose.yml</code></pre>
+              <pre data-prefix="$"><code>docker-compose up -d</code></pre>
+            </div>
+
+            <h3 class="text-2xl font-bold mb-4">Configuration Options</h3>
+            <div class="overflow-x-auto">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Variable</th>
+                    <th>Description</th>
+                    <th>Default</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>PORT</td>
+                    <td>Server port</td>
+                    <td>3000</td>
+                  </tr>
+                  <tr>
+                    <td>STORAGE_TYPE</td>
+                    <td>Storage backend (local, s3)</td>
+                    <td>local</td>
+                  </tr>
+                  <tr>
+                    <td>S3_ENDPOINT</td>
+                    <td>S3 endpoint URL</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>S3_REGION</td>
+                    <td>S3 region</td>
+                    <td>us-east-1</td>
+                  </tr>
+                  <tr>
+                    <td>S3_BUCKET</td>
+                    <td>S3 bucket name</td>
+                    <td>resize-it</td>
+                  </tr>
+                  <tr>
+                    <td>S3_ACCESS_KEY</td>
+                    <td>S3 access key</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>S3_SECRET_KEY</td>
+                    <td>S3 secret key</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>CACHE_ENABLED</td>
+                    <td>Enable image caching</td>
+                    <td>true</td>
+                  </tr>
+                  <tr>
+                    <td>CACHE_TTL</td>
+                    <td>Cache time-to-live (seconds)</td>
+                    <td>86400</td>
+                  </tr>
+                  <tr>
+                    <td>REDIS_URL</td>
+                    <td>Redis/Dragonfly connection URL</td>
+                    <td>redis://localhost:6379</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="py-16 bg-base-100">
+      <div class="container mx-auto px-4 text-center">
+        <div class="max-w-2xl mx-auto">
+          <h2 class="text-3xl font-bold mb-4">
+            Ready to Optimize Your Images?
+          </h2>
+          <p class="mb-8">
+            Join the community of developers who trust Resize-it for their image
+            processing needs.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="https://github.com/karnak19/resize-it"
+              target="_blank"
+              class="btn btn-primary"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                class="mr-2 h-5 w-5"
+              >
+                <path
+                  d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+                />
+              </svg>
+              Star on GitHub
+            </a>
+            <a
+              href="https://docs.resize-it.dev"
+              target="_blank"
+              class="btn btn-outline"
+              >View Documentation</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer p-10 bg-neutral text-neutral-content">
+      <nav>
+        <h6 class="footer-title">Project</h6>
+        <a href="#features" class="link link-hover">Features</a>
+        <a href="#api" class="link link-hover">API</a>
+        <a href="#sdk" class="link link-hover">SDK</a>
+        <a href="#installation" class="link link-hover">Installation</a>
+      </nav>
+      <nav>
+        <h6 class="footer-title">Community</h6>
+        <a
+          href="https://github.com/karnak19/resize-it"
+          target="_blank"
+          class="link link-hover"
+          >GitHub</a
+        >
+        <a
+          href="https://discord.gg/resize-it"
+          target="_blank"
+          class="link link-hover"
+          >Discord</a
+        >
+        <a
+          href="https://twitter.com/resizeitdev"
+          target="_blank"
+          class="link link-hover"
+          >Twitter</a
+        >
+      </nav>
+      <nav>
+        <h6 class="footer-title">Legal</h6>
+        <a class="link link-hover">Terms of use</a>
+        <a class="link link-hover">Privacy policy</a>
+        <a class="link link-hover">License</a>
+      </nav>
+      <nav>
+        <h6 class="footer-title">Resources</h6>
+        <a
+          href="https://docs.resize-it.dev"
+          target="_blank"
+          class="link link-hover"
+          >Documentation</a
+        >
+        <a
+          href="https://github.com/karnak19/resize-it/blob/main/CHANGELOG.md"
+          target="_blank"
+          class="link link-hover"
+          >Changelog</a
+        >
+        <a
+          href="https://github.com/karnak19/resize-it/blob/main/CONTRIBUTING.md"
+          target="_blank"
+          class="link link-hover"
+          >Contributing</a
+        >
+      </nav>
+    </footer>
+    <footer class="footer footer-center p-4 bg-base-300 text-base-content">
+      <aside>
+        <p>
+          Released under the MIT License - Copyright © 2024 Resize-it
+          Contributors
+        </p>
+      </aside>
+    </footer>
+  </body>
+</html>
