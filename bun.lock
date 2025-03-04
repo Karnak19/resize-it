@@ -3,6 +3,9 @@
   "workspaces": {
     "": {
       "name": "app",
+      "dependencies": {
+        "minio": "^8.0.4",
+      },
       "devDependencies": {
         "bun-types": "latest",
       },

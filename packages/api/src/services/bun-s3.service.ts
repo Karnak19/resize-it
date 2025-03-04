@@ -11,14 +11,34 @@ export class BunS3Service implements StorageService {
       config.storage.endpoint
     }:${config.storage.port}`;
 
-    console.log("🚀 ~ BunS3Service ~ constructor ~ endpoint:", endpoint);
-
     this.client = new S3Client({
       accessKeyId: config.storage.accessKey,
       secretAccessKey: config.storage.secretKey,
       bucket: config.storage.bucket,
       endpoint,
     });
+
+    // Create bucket if it doesn't exist
+    this.createBucketIfNotExists();
+  }
+
+  private async createBucketIfNotExists(): Promise<void> {
+    const Minio = await import("minio");
+    const minioClient = new Minio.Client({
+      endPoint: config.storage.endpoint,
+      port: config.storage.port,
+      useSSL: config.storage.useSSL,
+      accessKey: config.storage.accessKey,
+      secretKey: config.storage.secretKey,
+    });
+
+    const bucketExists = await minioClient.bucketExists(config.storage.bucket);
+    if (!bucketExists) {
+      logger.info(`Creating bucket '${config.storage.bucket}'`);
+      await minioClient.makeBucket(config.storage.bucket, "us-east-1");
+    } else {
+      logger.info(`Bucket '${config.storage.bucket}' already exists`);
+    }
   }
 
   async initialize(): Promise<void> {
@@ -47,6 +67,7 @@ export class BunS3Service implements StorageService {
     contentType: string
   ): Promise<string> {
     const s3File = this.client.file(objectName);
+    console.log("🚀 ~ BunS3Service ~ s3File:", s3File);
     await s3File.write(data, {
       type: contentType,
     });

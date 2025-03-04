@@ -7,7 +7,7 @@ import { cacheService, CacheService } from "./cache.service";
 export interface ResizeOptions {
   width?: number;
   height?: number;
-  format?: "webp" | "jpeg" | "png";
+  format?: "webp" | "jpeg" | "jpg" | "png";
   quality?: number;
   rotate?: number;
   flip?: boolean;
@@ -151,6 +151,7 @@ export class ImageService {
         transformer = transformer.webp({ quality });
         break;
       case "jpeg":
+      case "jpg":
         transformer = transformer.jpeg({ quality });
         break;
       case "png":

@@ -25,7 +25,7 @@ export interface ResizeOptions {
   // Basic options
   width?: number;
   height?: number;
-  format?: "webp" | "jpeg" | "png";
+  format?: "webp" | "jpeg" | "jpg" | "png";
   quality?: number;
 
   // Transformation options

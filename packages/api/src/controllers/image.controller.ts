@@ -115,8 +115,7 @@ export const imageController = new Elysia({ prefix: "/images" })
         // Get the original image from MinIO
         const originalExists = await storageService.objectExists(path);
         if (!originalExists) {
-          set.status = 404;
-          return { error: "Image not found" };
+          return error(404, { message: "Image not found" });
         }
 
         const originalImage = await storageService.getObject(path);
