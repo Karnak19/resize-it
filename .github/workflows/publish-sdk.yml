@@ -48,4 +48,4 @@ jobs:
             bun publish --access public --tag next
           fi
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
