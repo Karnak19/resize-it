@@ -5,7 +5,7 @@ import { storageService } from "../services/bun-s3.service";
 import { ApiKeyService } from "../middleware/auth.middleware";
 
 const resizeParamsSchema = t.Object({
-  path: t.String(),
+  "*": t.String(),
 });
 
 const resizeQuerySchema = t.Object({
@@ -39,10 +39,12 @@ export const imageController = new Elysia({ prefix: "/images" })
   // .use(AuthMiddleware.apiKeyAuth)
   .get("/health", () => ({ status: "ok" }))
   .get(
-    "/resize/:path",
+    "/resize/*",
     async ({ params, query, set }) => {
       try {
-        const { path } = params;
+        // Extract the path from the wildcard parameter
+        const path = params["*"];
+
         const options: ResizeOptions = {
           // Basic options
           width: query.width ? parseInt(query.width as string) : undefined,
@@ -92,17 +94,16 @@ export const imageController = new Elysia({ prefix: "/images" })
 
         // Generate a cache key for this specific resize operation
         const cacheKey = imageService.generateCacheKey(path, options);
+        const cachePath = `cache/${cacheKey}`;
 
         // Check if the resized image already exists in the cache
         const cacheExists =
           config.cache.enabled &&
-          (await storageService.objectExists(`cache/${cacheKey}`));
+          (await storageService.objectExists(cachePath));
 
         if (cacheExists) {
           // Return the cached image
-          const cachedImage = await storageService.getObject(
-            `cache/${cacheKey}`
-          );
+          const cachedImage = await storageService.getObject(cachePath);
           set.headers["Content-Type"] = imageService.getContentType(
             options.format as string
           );
@@ -130,7 +131,7 @@ export const imageController = new Elysia({ prefix: "/images" })
         // Store the resized image in the cache if caching is enabled
         if (config.cache.enabled) {
           await storageService.putObject(
-            `cache/${cacheKey}`,
+            cachePath,
             resizedImage,
             imageService.getContentType(options.format as string)
           );
@@ -142,10 +143,9 @@ export const imageController = new Elysia({ prefix: "/images" })
         );
         set.headers["Cache-Control"] = `public, max-age=${config.cache.maxAge}`;
         return resizedImage;
-      } catch (error) {
-        console.error("Error processing image:", error);
-        set.status = 500;
-        return { error: "Failed to process image" };
+      } catch (err) {
+        console.error("Error processing image:", err);
+        return error(500, { message: "Failed to process image" });
       }
     },
     { params: resizeParamsSchema, query: resizeQuerySchema }

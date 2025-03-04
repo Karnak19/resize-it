@@ -141,12 +141,15 @@ export class CacheService {
    * @returns Cache key
    */
   generateImageCacheKey(path: string, options: Record<string, any>): string {
+    // Normalize the path by replacing slashes with a safe character
+    const normalizedPath = path.replace(/\//g, ":");
+
     const optionsStr = Object.entries(options)
       .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
       .map(([key, value]) => `${key}=${value}`)
       .join("&");
 
-    return `image:${path}:${optionsStr}`;
+    return `image:${normalizedPath}:${optionsStr}`;
   }
 
   /**
