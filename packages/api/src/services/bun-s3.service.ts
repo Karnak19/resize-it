@@ -91,7 +91,13 @@ export class BunS3Service implements StorageService {
     }
   }
 
-  getObjectUrl(objectName: string): string {
+  getObjectUrl(objectName: string, baseUrl?: string): string {
+    // If a baseUrl is provided, use it to generate a URL to the resize-it service
+    if (baseUrl) {
+      return `${baseUrl}/images/resize/${objectName}`;
+    }
+
+    // Fallback to direct S3 URL if no public URL is configured
     const protocol = config.storage.useSSL ? "https" : "http";
     return `${protocol}://${config.storage.endpoint}:${config.storage.port}/${config.storage.bucket}/${objectName}`;
   }

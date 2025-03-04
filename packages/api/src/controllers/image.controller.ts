@@ -153,7 +153,7 @@ export const imageController = new Elysia({ prefix: "/images" })
   .use(ApiKeyService)
   .post(
     "/upload",
-    async ({ body }) => {
+    async ({ body, request }) => {
       try {
         const { image, path, contentType } = body;
 
@@ -167,10 +167,13 @@ export const imageController = new Elysia({ prefix: "/images" })
         // Store the original image in MinIO
         await storageService.putObject(path, buffer, contentType);
 
+        // Get the base URL from the request
+        const baseUrl = new URL(request.url).origin;
+
         return {
           success: true,
           path,
-          url: storageService.getObjectUrl(path),
+          url: storageService.getObjectUrl(path, baseUrl),
         };
       } catch (err) {
         console.error("Error uploading image:", err);
