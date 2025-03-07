@@ -21,7 +21,6 @@ services:
       interval: 5s
       timeout: 10s
       retries: 3
-      start_period: 10s
     restart: unless-stopped
 
   # Dragonfly service for caching
@@ -38,7 +37,6 @@ services:
       interval: 5s
       timeout: 10s
       retries: 3
-      start_period: 5s
     restart: unless-stopped
 
   # API service
@@ -75,9 +73,42 @@ services:
       retries: 3
       start_period: 15s
 
+  dashboard:
+    build:
+      context: ./packages/dashboard
+      dockerfile: Dockerfile
+    expose:
+      - "3000"
+    ports:
+      - "3006:3000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql://pg:pg@pg:5432/resize-it-dashboard}
+      - BETTER_AUTH_URL=${BETTER_AUTH_URL:-http://localhost:3000}
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-secret}
+    depends_on:
+      pg:
+        condition: service_healthy
+    restart: unless-stopped
+
+  pg:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: pg
+      POSTGRES_PASSWORD: pg
+      POSTGRES_DB: resize-it-dashboard
+    expose:
+      - "5432"
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
 # Define named volumes for data persistence
 volumes:
   minio_data:
     name: resize-it-minio-data
   dragonfly_data:
     name: resize-it-dragonfly-data
+  pg_data:
+    name: resize-it-pg-data

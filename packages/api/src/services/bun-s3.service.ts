@@ -5,16 +5,20 @@ import { logger } from "../utils/logger";
 
 export class BunS3Service implements StorageService {
   private client: S3Client;
+  private bucketName: string;
 
-  constructor() {
+  constructor(customBucket?: string) {
     const endpoint = `http${config.storage.useSSL ? "s" : ""}://${
       config.storage.endpoint
     }:${config.storage.port}`;
 
+    // Use custom bucket if provided (for SaaS mode), otherwise use the default bucket
+    this.bucketName = customBucket || config.storage.bucket;
+
     this.client = new S3Client({
       accessKeyId: config.storage.accessKey,
       secretAccessKey: config.storage.secretKey,
-      bucket: config.storage.bucket,
+      bucket: this.bucketName,
       endpoint,
     });
 
@@ -32,12 +36,12 @@ export class BunS3Service implements StorageService {
       secretKey: config.storage.secretKey,
     });
 
-    const bucketExists = await minioClient.bucketExists(config.storage.bucket);
+    const bucketExists = await minioClient.bucketExists(this.bucketName);
     if (!bucketExists) {
-      logger.info(`Creating bucket '${config.storage.bucket}'`);
-      await minioClient.makeBucket(config.storage.bucket, "us-east-1");
+      logger.info(`Creating bucket '${this.bucketName}'`);
+      await minioClient.makeBucket(this.bucketName);
     } else {
-      logger.info(`Bucket '${config.storage.bucket}' already exists`);
+      logger.info(`Bucket '${this.bucketName}' already exists`);
     }
   }
 
@@ -47,7 +51,7 @@ export class BunS3Service implements StorageService {
       // So we'll try to use the client and handle any errors
       const testFile = this.client.file("test-connection.txt");
       await testFile.exists();
-      logger.info(`Connected to bucket '${config.storage.bucket}'`);
+      logger.info(`Connected to bucket '${this.bucketName}'`);
     } catch (error: any) {
       logger.error("S3 connection error:", error);
       throw new Error(
@@ -91,15 +95,20 @@ export class BunS3Service implements StorageService {
     }
   }
 
-  getObjectUrl(objectName: string, baseUrl?: string): string {
+  getObjectUrl(objectName: string, baseUrl?: string, apiKey?: string): string {
     // If a baseUrl is provided, use it to generate a URL to the resize-it service
     if (baseUrl) {
-      return `${baseUrl}/images/resize/${objectName}`;
+      const url = `${baseUrl}/images/resize/${objectName}`;
+      // If an API key is provided, add it as a query parameter
+      if (apiKey) {
+        return `${url}?apiKey=${apiKey}`;
+      }
+      return url;
     }
 
     // Fallback to direct S3 URL if no public URL is configured
     const protocol = config.storage.useSSL ? "https" : "http";
-    return `${protocol}://${config.storage.endpoint}:${config.storage.port}/${config.storage.bucket}/${objectName}`;
+    return `${protocol}://${config.storage.endpoint}:${config.storage.port}/${this.bucketName}/${objectName}`;
   }
 
   async listObjects(
@@ -127,4 +136,13 @@ export class BunS3Service implements StorageService {
   }
 }
 
+// Create a default storage service instance
 export const storageService = new BunS3Service();
+
+// Factory function to create storage service instances for specific buckets
+export const createStorageService = (bucketName?: string): StorageService => {
+  if (!bucketName) {
+    return storageService;
+  }
+  return new BunS3Service(bucketName);
+};

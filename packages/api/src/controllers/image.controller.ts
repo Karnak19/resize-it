@@ -1,8 +1,11 @@
 import { Elysia, error, t } from "elysia";
 import { config } from "../config";
 import { imageService, ResizeOptions } from "../services/image.service";
-import { storageService } from "../services/bun-s3.service";
-import { ApiKeyService } from "../middleware/auth.middleware";
+import { createStorageService } from "../services/bun-s3.service";
+import {
+  ApiKeyService,
+  ImageAuthMiddleware,
+} from "../middleware/auth.middleware";
 
 const resizeParamsSchema = t.Object({
   "*": t.String(),
@@ -27,6 +30,7 @@ const resizeQuerySchema = t.Object({
   cropTop: t.Optional(t.String()),
   cropWidth: t.Optional(t.String()),
   cropHeight: t.Optional(t.String()),
+  apiKey: t.Optional(t.String()),
 });
 
 const uploadBodySchema = t.Object({
@@ -36,12 +40,15 @@ const uploadBodySchema = t.Object({
 });
 
 export const imageController = new Elysia({ prefix: "/images" })
-  // .use(AuthMiddleware.apiKeyAuth)
   .get("/health", () => ({ status: "ok" }))
+  .use(ImageAuthMiddleware)
   .get(
     "/resize/*",
-    async ({ params, query, set }) => {
+    async ({ params, query, set, bucketName }) => {
+      console.log("🚀 ~ bucketName:", bucketName);
       try {
+        const storageService = createStorageService(bucketName);
+
         // Extract the path from the wildcard parameter
         const path = params["*"];
 
@@ -107,9 +114,8 @@ export const imageController = new Elysia({ prefix: "/images" })
           set.headers["Content-Type"] = imageService.getContentType(
             options.format as string
           );
-          set.headers[
-            "Cache-Control"
-          ] = `public, max-age=${config.cache.maxAge}`;
+          set.headers["Cache-Control"] =
+            `public, max-age=${config.cache.maxAge}`;
           return cachedImage;
         }
 
@@ -153,8 +159,10 @@ export const imageController = new Elysia({ prefix: "/images" })
   .use(ApiKeyService)
   .post(
     "/upload",
-    async ({ body, request }) => {
+    async ({ body, request, bucketName, apiKey }) => {
       try {
+        const storageService = createStorageService(bucketName);
+
         const { image, path, contentType } = body;
 
         if (!image || !path || !contentType) {
@@ -173,7 +181,11 @@ export const imageController = new Elysia({ prefix: "/images" })
         return {
           success: true,
           path,
-          url: storageService.getObjectUrl(path, baseUrl),
+          url: storageService.getObjectUrl(
+            path,
+            baseUrl,
+            config.security.saasMode ? apiKey : undefined
+          ),
         };
       } catch (err) {
         console.error("Error uploading image:", err);

@@ -29,6 +29,8 @@ const resizeIt = new ResizeIt({
 });
 ```
 
+> **Note:** When using the SDK in SaaS mode, the API key is automatically included as a query parameter in image URLs. This allows the images to be used directly in `<img>` tags without needing to set custom headers.
+
 ### Uploading an Image
 
 ```typescript

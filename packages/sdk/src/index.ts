@@ -159,6 +159,11 @@ export class ResizeIt {
       url.searchParams.append("cropHeight", options.crop.height.toString());
     }
 
+    // Add API key as a query parameter if it exists in the config
+    if (this.config.apiKey) {
+      url.searchParams.append("apiKey", this.config.apiKey);
+    }
+
     return url.toString();
   }
 
@@ -177,11 +182,6 @@ export class ResizeIt {
 
       const response = await fetch(url, {
         method: "GET",
-        headers: {
-          ...(this.config.apiKey
-            ? { Authorization: `Bearer ${this.config.apiKey}` }
-            : {}),
-        },
         signal: this.config.timeout
           ? AbortSignal.timeout(this.config.timeout)
           : undefined,

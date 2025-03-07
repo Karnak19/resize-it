@@ -39,6 +39,7 @@ export const config = {
       : 86400, // 1 day in seconds
   },
   security: {
+    saasMode: process.env.SAAS_MODE === "true",
     apiKeys: process.env.API_KEYS
       ? process.env.API_KEYS.split(",")
       : ["dev-api-key"],

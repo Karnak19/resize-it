@@ -15,7 +15,13 @@
     "sdk:test": "bun run --cwd packages/sdk test",
     "sdk:version:patch": "bun run --cwd packages/sdk version:patch",
     "sdk:version:minor": "bun run --cwd packages/sdk version:minor",
-    "sdk:version:major": "bun run --cwd packages/sdk version:major"
+    "sdk:version:major": "bun run --cwd packages/sdk version:major",
+    "dashboard:dev": "bun run --cwd packages/dashboard dev",
+    "dashboard:build": "bun run --cwd packages/dashboard build",
+    "dashboard:test": "bun run --cwd packages/dashboard test",
+    "dashboard:migrate": "bun run --cwd packages/dashboard drizzle-kit push",
+    "db-schema:dev": "bun run --cwd packages/db-schema dev",
+    "db-schema:build": "bun run --cwd packages/db-schema build"
   },
   "devDependencies": {
     "bun-types": "latest"

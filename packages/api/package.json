@@ -11,10 +11,12 @@
     "@elysiajs/cors": "^1.2.0",
     "@elysiajs/static": "^1.2.0",
     "@elysiajs/swagger": "^1.2.2",
+    "drizzle-orm": "^0.40.0",
     "elysia": "latest",
     "ioredis": "^5.5.0",
     "minio": "^8.0.4",
-    "sharp": "^0.33.5"
+    "sharp": "^0.33.5",
+    "db-schema": "workspace:*"
   },
   "devDependencies": {
     "bun-types": "latest"

@@ -39,9 +39,10 @@ export interface StorageService {
    * Get a URL for an object in storage
    * @param objectName The name/path of the object
    * @param baseUrl Optional base URL to use for generating the URL
+   * @param apiKey Optional API key to include in the URL for authentication
    * @returns The URL to access the object
    */
-  getObjectUrl(objectName: string, baseUrl?: string): string;
+  getObjectUrl(objectName: string, baseUrl?: string, apiKey?: string): string;
 
   /**
    * List objects in storage with an optional prefix
