@@ -70,9 +70,7 @@ export class ResizeIt {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(this.config.apiKey
-            ? { Authorization: `Bearer ${this.config.apiKey}` }
-            : {}),
+          ...(this.config.apiKey ? { "x-api-key": this.config.apiKey } : {}),
         },
         body: JSON.stringify({
           image: base64Image,
