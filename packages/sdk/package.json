@@ -6,12 +6,22 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./nextjs": {
+      "import": "./dist/nextjs.js",
+      "types": "./dist/nextjs.d.ts"
+    }
+  },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "bun build ./src/index.ts --outdir dist --target node --declaration && tsc --emitDeclarationOnly --outDir dist",
-    "dev": "bun build ./src/index.ts --outdir dist --target node --watch",
+    "build": "bun build ./src/index.ts ./src/nextjs.ts --outdir dist --target node --declaration && tsc --emitDeclarationOnly --outDir dist",
+    "dev": "bun build ./src/index.ts ./src/nextjs.ts --outdir dist --target node --watch",
     "test": "bun test",
     "prepublishOnly": "bun run build",
     "version:patch": "bun run scripts/publish.js patch",

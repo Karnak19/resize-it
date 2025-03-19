@@ -29,6 +29,47 @@ const resizeIt = new ResizeIt({
 });
 ```
 
+### Next.js Integration
+
+The SDK provides a dedicated Next.js integration that makes it easy to handle image uploads in your Next.js application:
+
+```typescript
+import { ResizeIt } from "@karnak19/resize-it-sdk";
+import { toNextJsHandler } from "@karnak19/resize-it-sdk/nextjs";
+
+const resizeIt = new ResizeIt({
+  baseUrl: process.env.RESIZE_IT_API_URL,
+  apiKey: process.env.RESIZE_IT_API_KEY,
+});
+
+// Create a Next.js API route handler
+export const { POST } = toNextJsHandler(resizeIt);
+```
+
+This creates an API route that:
+
+- Accepts file uploads via FormData
+- Automatically handles file processing
+- Organizes uploads by date (YYYY/MM/DD)
+- Returns the uploaded image details in the response
+
+Example usage in your frontend:
+
+```typescript
+async function uploadImage(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch("/api/upload", {
+    method: "POST",
+    body: formData,
+  });
+
+  const result = await response.json();
+  return result;
+}
+```
+
 ### Uploading an Image
 
 ```typescript
