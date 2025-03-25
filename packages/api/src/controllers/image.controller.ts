@@ -169,11 +169,15 @@ export const imageController = new Elysia({ prefix: "/images" })
 
         // Get the base URL from the request
         const baseUrl = new URL(request.url).origin;
+        const isProduction = process.env.NODE_ENV === "production";
+        const finalBaseUrl = isProduction
+          ? baseUrl.replace(/^http:/, "https:")
+          : baseUrl;
 
         return {
           success: true,
           path,
-          url: storageService.getObjectUrl(path, baseUrl),
+          url: storageService.getObjectUrl(path, finalBaseUrl),
         };
       } catch (err) {
         console.error("Error uploading image:", err);
