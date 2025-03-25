@@ -1,20 +1,37 @@
-FROM oven/bun:latest as base
+FROM oven/bun AS build
 
 WORKDIR /app
 
-# Install dependencies
+# Cache packages installation
 COPY package.json ./
 RUN bun install --frozen-lockfile
 
 # Copy source code
-COPY . .
+COPY ./src ./src
 
-# Expose the port
-EXPOSE 3000
+ENV NODE_ENV=production
 
-# Set environment variables to ensure the app listens on all interfaces
-ENV HOST=0.0.0.0
-ENV PORT=3000
+# Build to binary following Elysia.js recommendations
+RUN bun build \
+    --compile \
+    --minify-whitespace \
+    --minify-syntax \
+    --target bun \
+    --outfile server \
+    ./src/index.ts
+
+# Use distroless base image for smaller footprint
+FROM gcr.io/distroless/base
+
+WORKDIR /app
+
+# Copy only the binary
+COPY --from=build /app/server server
+
+ENV NODE_ENV=production
+
 
 # Start the application
-ENTRYPOINT ["bun", "run", "src/index.ts"]
+CMD ["./server"]
+
+EXPOSE 3000
