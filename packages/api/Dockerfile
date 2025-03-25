@@ -21,7 +21,7 @@ RUN bun build \
     ./src/index.ts
 
 # Use distroless base image for smaller footprint
-FROM gcr.io/distroless/base
+FROM oven/bun:latest
 
 WORKDIR /app
 
@@ -29,7 +29,6 @@ WORKDIR /app
 COPY --from=build /app/server server
 
 ENV NODE_ENV=production
-
 
 # Start the application
 CMD ["./server"]
