@@ -7,30 +7,16 @@ COPY package.json ./
 RUN bun install --frozen-lockfile
 
 # Copy source code
-COPY ./src ./src
+COPY . .
 
 ENV NODE_ENV=production
 
-# Build to binary following Elysia.js recommendations
-RUN bun build \
-    --compile \
-    --minify-whitespace \
-    --minify-syntax \
-    --target bun \
-    --outfile server \
-    ./src/index.ts
+# Expose the port
+EXPOSE 3000
 
-# Use distroless base image for smaller footprint
-FROM oven/bun:latest
-
-WORKDIR /app
-
-# Copy only the binary
-COPY --from=build /app/server server
-
-ENV NODE_ENV=production
+# Set environment variables to ensure the app listens on all interfaces
+ENV HOST=0.0.0.0
+ENV PORT=3000
 
 # Start the application
-CMD ["./server"]
-
-EXPOSE 3000
+ENTRYPOINT ["bun", "run", "src/index.ts"]
