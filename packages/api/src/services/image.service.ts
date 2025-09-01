@@ -8,7 +8,7 @@ import { cacheService, CacheService } from "./cache.service";
 export interface ResizeOptions {
   width?: number;
   height?: number;
-  format?: "webp" | "jpeg" | "jpg" | "png" | "heic";
+  format?: "webp" | "jpeg" | "jpg" | "png";
   quality?: number;
   rotate?: number;
   flip?: boolean;
@@ -74,7 +74,7 @@ export class ImageService {
       processedImageBuffer = Buffer.from(
         await heicConvert({
           buffer: imageBuffer,
-          format: "PNG",
+          format: "JPEG",
         })
       );
       inputSize = processedImageBuffer.length;
@@ -177,8 +177,6 @@ export class ImageService {
       case "png":
         transformer = transformer.png({ quality });
         break;
-      case "heic":
-        throw new Error("HEIC output format is not supported.");
       default:
         transformer = transformer.webp({ quality });
     }
@@ -351,8 +349,6 @@ export class ImageService {
         return "image/jpeg";
       case "png":
         return "image/png";
-      case "heic":
-        return "image/heic";
       default:
         return "image/webp";
     }
