@@ -1,13 +1,14 @@
 import sharp from "sharp";
 import { config } from "../config";
 import { createHash } from "crypto";
+import heicConvert from "heic-convert";
 import { monitoringService, MonitoringService } from "./monitoring.service";
 import { cacheService, CacheService } from "./cache.service";
 
 export interface ResizeOptions {
   width?: number;
   height?: number;
-  format?: "webp" | "jpeg" | "jpg" | "png";
+  format?: "webp" | "jpeg" | "jpg" | "png" | "heic";
   quality?: number;
   rotate?: number;
   flip?: boolean;
@@ -57,13 +58,32 @@ export class ImageService {
     this.cacheService = cacheService;
   }
 
+  private isHeic(buffer: Buffer): boolean {
+    if (buffer.length < 12) {
+      return false;
+    }
+    const signature = buffer.slice(4, 12);
+    return signature.toString() === "ftypheic";
+  }
+
   async resize(
     imageBuffer: Buffer,
     options: ResizeOptions,
     originalPath: string = "unknown"
   ): Promise<Buffer> {
     const startTime = performance.now();
-    const inputSize = imageBuffer.length;
+    let inputSize = imageBuffer.length;
+    let processedImageBuffer = imageBuffer;
+
+    if (this.isHeic(imageBuffer)) {
+      processedImageBuffer = Buffer.from(
+        await heicConvert({
+          buffer: imageBuffer,
+          format: "PNG",
+        })
+      );
+      inputSize = processedImageBuffer.length;
+    }
 
     // Try to get from cache first if cache service is available
     if (this.cacheService && config.cache.enabled) {
@@ -101,7 +121,7 @@ export class ImageService {
       crop,
     } = options;
 
-    let transformer = sharp(imageBuffer);
+    let transformer = sharp(processedImageBuffer);
 
     if (crop && crop.width && crop.height) {
       transformer = transformer.extract({
@@ -153,6 +173,8 @@ export class ImageService {
       case "png":
         transformer = transformer.png({ quality });
         break;
+      case "heic":
+        throw new Error("HEIC output format is not supported.");
       default:
         transformer = transformer.webp({ quality });
     }
@@ -391,6 +413,8 @@ export class ImageService {
         return "image/jpeg";
       case "png":
         return "image/png";
+      case "heic":
+        return "image/heic";
       default:
         return "image/webp";
     }

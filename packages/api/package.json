@@ -2,7 +2,7 @@
   "name": "@resize-it/api",
   "version": "1.1.1",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "bun test",
     "dev": "bun run --watch src/index.ts",
     "build": "bun build src/index.ts --outdir dist",
     "start": "bun run dist/index.js"
@@ -12,6 +12,7 @@
     "@elysiajs/static": "^1.2.0",
     "@elysiajs/swagger": "^1.2.2",
     "elysia": "latest",
+    "heic-convert": "^2.1.0",
     "ioredis": "^5.5.0",
     "minio": "^8.0.4",
     "sharp": "^0.33.5"
