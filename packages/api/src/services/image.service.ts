@@ -1,7 +1,6 @@
 import sharp from "sharp";
 import { config } from "../config";
 import { createHash } from "crypto";
-import heicConvert from "heic-convert";
 import { monitoringService, MonitoringService } from "./monitoring.service";
 import { cacheService, CacheService } from "./cache.service";
 
@@ -44,6 +43,7 @@ interface CachedImage {
 export class ImageService {
   private monitoringService?: MonitoringService;
   private cacheService?: CacheService;
+  private heicConvert: any;
 
   constructor(
     monitoringService?: MonitoringService,
@@ -57,8 +57,23 @@ export class ImageService {
     if (buffer.length < 12) {
       return false;
     }
-    const signature = buffer.slice(4, 12);
-    return signature.toString() === "ftypheic";
+    const signature = buffer.slice(4, 12).toString();
+    const validSignatures = [
+      "ftypheic",
+      "ftypheix",
+      "ftyphevc",
+      "ftyphevx",
+      "ftypmif1",
+      "ftypmsf1",
+    ];
+    if (validSignatures.includes(signature)) {
+      return true;
+    }
+
+    const signatureShort = signature.slice(4, 8).toString();
+    const validShortSignatures = ["heic", "heix", "hevc", "hevx"];
+
+    return validShortSignatures.includes(signatureShort);
   }
 
   async resize(
@@ -71,8 +86,11 @@ export class ImageService {
     let processedImageBuffer = imageBuffer;
 
     if (this.isHeic(imageBuffer)) {
+      if (!this.heicConvert) {
+        this.heicConvert = (await import("heic-convert")).default;
+      }
       processedImageBuffer = Buffer.from(
-        await heicConvert({
+        await this.heicConvert({
           buffer: imageBuffer,
           format: "JPEG",
         })
