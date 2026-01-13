@@ -1,4 +1,4 @@
-import { Elysia, error, t } from "elysia";
+import { Elysia, t } from "elysia";
 import { config } from "../config";
 import { imageService, ResizeOptions } from "../services/image.service";
 import { storageService } from "../services/bun-s3.service";
@@ -116,7 +116,8 @@ export const imageController = new Elysia({ prefix: "/images" })
         // Get the original image from MinIO
         const originalExists = await storageService.objectExists(path);
         if (!originalExists) {
-          return error(404, { message: "Image not found" });
+          set.status = 404;
+          return { message: "Image not found" };
         }
 
         const originalImage = await storageService.getObject(path);
@@ -145,7 +146,8 @@ export const imageController = new Elysia({ prefix: "/images" })
         return resizedImage;
       } catch (err) {
         console.error("Error processing image:", err);
-        return error(500, { message: "Failed to process image" });
+        set.status = 500;
+        return { message: "Failed to process image" };
       }
     },
     { params: resizeParamsSchema, query: resizeQuerySchema }
@@ -153,12 +155,13 @@ export const imageController = new Elysia({ prefix: "/images" })
   .use(ApiKeyService)
   .post(
     "/upload",
-    async ({ body, request }) => {
+    async ({ body, request, set }) => {
       try {
         const { image, path, contentType } = body;
 
         if (!image || !path || !contentType) {
-          return error(400, { message: "Missing required fields" });
+          set.status = 400;
+          return { message: "Missing required fields" };
         }
 
         // Convert base64 to buffer
@@ -181,7 +184,8 @@ export const imageController = new Elysia({ prefix: "/images" })
         };
       } catch (err) {
         console.error("Error uploading image:", err);
-        return error(500, { message: "Failed to upload image" });
+        set.status = 500;
+        return { message: "Failed to upload image" };
       }
     },
     { body: uploadBodySchema }

@@ -42,7 +42,7 @@ describe("ResizeIt SDK", () => {
       });
 
       expect(url).toBe(
-        "https://api.example.com/resize/images/test.jpg?width=300&height=200&format=webp&quality=80"
+        "https://api.example.com/images/resize/images/test.jpg?width=300&height=200&format=webp&quality=80"
       );
     });
 
@@ -57,7 +57,7 @@ describe("ResizeIt SDK", () => {
       });
 
       expect(url).toBe(
-        "https://api.example.com/resize/images/test.jpg?width=300&height=200&rotate=90&flip=true&grayscale=true"
+        "https://api.example.com/images/resize/images/test.jpg?width=300&height=200&rotate=90&flip=true&grayscale=true"
       );
     });
 
@@ -74,7 +74,7 @@ describe("ResizeIt SDK", () => {
       });
 
       expect(url).toBe(
-        "https://api.example.com/resize/images/test.jpg?width=300&height=200&watermarkText=Example&watermarkPosition=bottom-right&watermarkOpacity=0.5"
+        "https://api.example.com/images/resize/images/test.jpg?width=300&height=200&watermarkText=Example&watermarkPosition=bottom-right&watermarkOpacity=0.5"
       );
     });
 
@@ -92,7 +92,7 @@ describe("ResizeIt SDK", () => {
       });
 
       expect(url).toBe(
-        "https://api.example.com/resize/images/test.jpg?width=300&height=200&cropLeft=10&cropTop=20&cropWidth=100&cropHeight=100"
+        "https://api.example.com/images/resize/images/test.jpg?width=300&height=200&cropLeft=10&cropTop=20&cropWidth=100&cropHeight=100"
       );
     });
   });
@@ -138,7 +138,7 @@ describe("ResizeIt SDK", () => {
 
       // Verify fetch was called with the right arguments
       expect(global.fetch).toHaveBeenCalledWith(
-        "https://api.example.com/upload",
+        "https://api.example.com/images/upload",
         expect.objectContaining({
           method: "POST",
           headers: {
@@ -220,7 +220,7 @@ describe("ResizeIt SDK", () => {
 
       // Verify fetch was called with the right URL
       expect(global.fetch).toHaveBeenCalledWith(
-        "https://api.example.com/resize/images/test.jpg?width=300&height=200",
+        "https://api.example.com/images/resize/images/test.jpg?width=300&height=200",
         expect.objectContaining({
           method: "GET",
         })

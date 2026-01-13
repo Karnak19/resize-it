@@ -1,4 +1,4 @@
-import { Elysia, error, t } from "elysia";
+import { Elysia, t } from "elysia";
 import { monitoringService } from "../services/monitoring.service";
 import { storageService } from "../services/bun-s3.service";
 import { cacheService } from "../services/cache.service";
@@ -16,7 +16,7 @@ export const adminController = new Elysia({ prefix: "/admin" })
   // Clear MinIO cache
   .post(
     "/cache/minio/clear",
-    async ({ query }) => {
+    async ({ query, set }) => {
       try {
         const { pattern } = query;
         const prefix = "cache/";
@@ -51,7 +51,8 @@ export const adminController = new Elysia({ prefix: "/admin" })
         };
       } catch (err) {
         console.error("Error clearing MinIO cache:", err);
-        return error(500, { message: "Failed to clear MinIO cache" });
+        set.status = 500;
+        return { message: "Failed to clear MinIO cache" };
       }
     },
     {
@@ -80,10 +81,11 @@ export const adminController = new Elysia({ prefix: "/admin" })
         // We would need to implement a pattern-based deletion in the future
         // For now, we'll just return a message that it's not supported
         if (pattern) {
-          return error(400, {
+          set.status = 400;
+          return {
             message:
               "Pattern-based cache clearing is not supported for Dragonfly yet",
-          });
+          };
         }
 
         // Since we can't clear by pattern, we'll just return a message
@@ -95,7 +97,8 @@ export const adminController = new Elysia({ prefix: "/admin" })
         };
       } catch (err) {
         console.error("Error clearing Dragonfly cache:", err);
-        return error(500, { message: "Failed to clear Dragonfly cache" });
+        set.status = 500;
+        return { message: "Failed to clear Dragonfly cache" };
       }
     },
     {
@@ -145,7 +148,8 @@ export const adminController = new Elysia({ prefix: "/admin" })
         };
       } catch (err) {
         console.error("Error listing MinIO cache:", err);
-        return error(500, { message: "Failed to list MinIO cache" });
+        set.status = 500;
+        return { message: "Failed to list MinIO cache" };
       }
     },
     {
