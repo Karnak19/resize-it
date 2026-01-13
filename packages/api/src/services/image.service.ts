@@ -48,6 +48,7 @@ interface CachedImage {
 export class ImageService {
   private monitoringService?: MonitoringService;
   private cacheService?: CacheService;
+  private heicConvert?: (options: { buffer: Buffer; format: "JPEG" | "PNG" }) => Promise<ArrayBuffer>;
 
   constructor(
     monitoringService?: MonitoringService,
@@ -57,6 +58,29 @@ export class ImageService {
     this.cacheService = cacheService;
   }
 
+  private isHeic(buffer: Buffer): boolean {
+    if (buffer.length < 12) {
+      return false;
+    }
+    const signature = buffer.subarray(4, 12).toString();
+    const validSignatures = [
+      "ftypheic",
+      "ftypheix",
+      "ftyphevc",
+      "ftyphevx",
+      "ftypmif1",
+      "ftypmsf1",
+    ];
+    if (validSignatures.includes(signature)) {
+      return true;
+    }
+
+    const signatureShort = signature.slice(4, 8);
+    const validShortSignatures = ["heic", "heix", "hevc", "hevx"];
+
+    return validShortSignatures.includes(signatureShort);
+  }
+
   async resize(
     imageBuffer: Buffer,
     options: ResizeOptions,
@@ -64,6 +88,23 @@ export class ImageService {
   ): Promise<Buffer> {
     const startTime = performance.now();
     const inputSize = imageBuffer.length;
+    let processedImageBuffer = imageBuffer;
+
+    if (this.isHeic(imageBuffer)) {
+      try {
+        if (!this.heicConvert) {
+          this.heicConvert = (await import("heic-convert")).default;
+        }
+        processedImageBuffer = Buffer.from(
+          await this.heicConvert({
+            buffer: imageBuffer,
+            format: "JPEG",
+          })
+        );
+      } catch (error) {
+        throw new Error(`Failed to convert HEIC image: ${(error as Error).message}`);
+      }
+    }
 
     // Try to get from cache first if cache service is available
     if (this.cacheService && config.cache.enabled) {
@@ -101,7 +142,7 @@ export class ImageService {
       crop,
     } = options;
 
-    let transformer = sharp(imageBuffer);
+    let transformer = sharp(processedImageBuffer);
 
     if (crop && crop.width && crop.height) {
       transformer = transformer.extract({
