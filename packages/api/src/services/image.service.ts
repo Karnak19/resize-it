@@ -48,7 +48,7 @@ interface CachedImage {
 export class ImageService {
   private monitoringService?: MonitoringService;
   private cacheService?: CacheService;
-  private heicConvert: any;
+  private heicConvert?: (options: { buffer: Buffer; format: "JPEG" | "PNG" }) => Promise<ArrayBuffer>;
 
   constructor(
     monitoringService?: MonitoringService,
@@ -62,7 +62,7 @@ export class ImageService {
     if (buffer.length < 12) {
       return false;
     }
-    const signature = buffer.slice(4, 12).toString();
+    const signature = buffer.subarray(4, 12).toString();
     const validSignatures = [
       "ftypheic",
       "ftypheix",
@@ -75,7 +75,7 @@ export class ImageService {
       return true;
     }
 
-    const signatureShort = signature.slice(4, 8).toString();
+    const signatureShort = signature.slice(4, 8);
     const validShortSignatures = ["heic", "heix", "hevc", "hevx"];
 
     return validShortSignatures.includes(signatureShort);
@@ -87,20 +87,23 @@ export class ImageService {
     originalPath: string = "unknown"
   ): Promise<Buffer> {
     const startTime = performance.now();
-    let inputSize = imageBuffer.length;
+    const inputSize = imageBuffer.length;
     let processedImageBuffer = imageBuffer;
 
     if (this.isHeic(imageBuffer)) {
-      if (!this.heicConvert) {
-        this.heicConvert = (await import("heic-convert")).default;
+      try {
+        if (!this.heicConvert) {
+          this.heicConvert = (await import("heic-convert")).default;
+        }
+        processedImageBuffer = Buffer.from(
+          await this.heicConvert({
+            buffer: imageBuffer,
+            format: "JPEG",
+          })
+        );
+      } catch (error) {
+        throw new Error(`Failed to convert HEIC image: ${(error as Error).message}`);
       }
-      processedImageBuffer = Buffer.from(
-        await this.heicConvert({
-          buffer: imageBuffer,
-          format: "JPEG",
-        })
-      );
-      inputSize = processedImageBuffer.length;
     }
 
     // Try to get from cache first if cache service is available
