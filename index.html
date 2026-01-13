@@ -1,1508 +1,1583 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dracula">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Resize-It v1.1.1: Modern Image Resizing Service</title>
-    <!-- Tailwind CSS and DaisyUI -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/daisyui@5"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link
-      href="https://cdn.jsdelivr.net/npm/daisyui@5.0.0/themes.css"
-      rel="stylesheet"
-      type="text/css"
-    />
+    <title>Resize-It | High-Performance Image Processing</title>
+    <meta name="description" content="Open-source, blazing-fast image resizing and optimization service. Self-host your own image transformation API." />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg-primary: #0a0a0b;
+        --bg-secondary: #111113;
+        --bg-tertiary: #18181b;
+        --bg-elevated: #1f1f23;
+        --text-primary: #fafafa;
+        --text-secondary: #a1a1aa;
+        --text-muted: #71717a;
+        --accent-primary: #f97316;
+        --accent-secondary: #fb923c;
+        --accent-glow: rgba(249, 115, 22, 0.4);
+        --border-subtle: rgba(255, 255, 255, 0.06);
+        --border-medium: rgba(255, 255, 255, 0.1);
+        --gradient-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        line-height: 1.6;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* Noise overlay */
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--gradient-noise);
+        opacity: 0.03;
+        pointer-events: none;
+        z-index: 1000;
+      }
+
+      /* Typography */
+      .font-serif {
+        font-family: 'Instrument Serif', Georgia, serif;
+      }
+
+      .font-mono {
+        font-family: 'DM Mono', 'SF Mono', monospace;
+      }
+
+      /* Container */
+      .container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+
+      /* Navigation */
+      .nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        padding: 20px 0;
+        transition: all 0.3s ease;
+      }
+
+      .nav.scrolled {
+        background: rgba(10, 10, 11, 0.85);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        color: var(--text-primary);
+      }
+
+      .logo-icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 18px;
+      }
+
+      .logo-text {
+        font-weight: 600;
+        font-size: 18px;
+        letter-spacing: -0.02em;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        list-style: none;
+      }
+
+      .nav-links a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: color 0.2s ease;
+      }
+
+      .nav-links a:hover {
+        color: var(--text-primary);
+      }
+
+      .nav-cta {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border: none;
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-secondary);
+      }
+
+      .btn-ghost:hover {
+        color: var(--text-primary);
+        background: var(--bg-elevated);
+      }
+
+      .btn-primary {
+        background: var(--text-primary);
+        color: var(--bg-primary);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      }
+
+      .btn-accent {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        color: white;
+        box-shadow: 0 4px 16px var(--accent-glow);
+      }
+
+      .btn-accent:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px var(--accent-glow);
+      }
+
+      /* Hero Section */
+      .hero {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+        padding-top: 100px;
+        overflow: hidden;
+      }
+
+      .hero-bg {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+      }
+
+      .hero-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        background-size: 60px 60px;
+        mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black, transparent);
+      }
+
+      .hero-glow {
+        position: absolute;
+        top: -200px;
+        right: -200px;
+        width: 800px;
+        height: 800px;
+        background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
+        opacity: 0.4;
+        animation: pulse 8s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.4; }
+        50% { transform: scale(1.1); opacity: 0.6; }
+      }
+
+      .hero-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 80px;
+        align-items: center;
+      }
+
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-medium);
+        border-radius: 100px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        margin-bottom: 24px;
+        animation: fadeInUp 0.6s ease both;
+      }
+
+      .hero-badge .dot {
+        width: 6px;
+        height: 6px;
+        background: #22c55e;
+        border-radius: 50%;
+        animation: blink 2s ease-in-out infinite;
+      }
+
+      @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+      }
+
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .hero-title {
+        font-size: clamp(48px, 6vw, 72px);
+        font-weight: 700;
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+        margin-bottom: 24px;
+        animation: fadeInUp 0.6s ease 0.1s both;
+      }
+
+      .hero-title .accent {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .hero-subtitle {
+        font-size: 18px;
+        color: var(--text-secondary);
+        max-width: 480px;
+        margin-bottom: 40px;
+        animation: fadeInUp 0.6s ease 0.2s both;
+      }
+
+      .hero-actions {
+        display: flex;
+        gap: 16px;
+        animation: fadeInUp 0.6s ease 0.3s both;
+      }
+
+      .hero-visual {
+        position: relative;
+        animation: fadeInUp 0.8s ease 0.4s both;
+      }
+
+      .code-window {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-medium);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.05),
+          0 20px 50px rgba(0, 0, 0, 0.5),
+          0 0 100px var(--accent-glow);
+      }
+
+      .code-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 16px 20px;
+        background: var(--bg-tertiary);
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .code-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+
+      .code-dot.red { background: #ff5f57; }
+      .code-dot.yellow { background: #febc2e; }
+      .code-dot.green { background: #28c840; }
+
+      .code-title {
+        margin-left: 12px;
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+
+      .code-body {
+        padding: 24px;
+        font-family: 'DM Mono', monospace;
+        font-size: 14px;
+        line-height: 1.8;
+      }
+
+      .code-line {
+        display: flex;
+        gap: 16px;
+      }
+
+      .code-number {
+        color: var(--text-muted);
+        min-width: 24px;
+        text-align: right;
+        user-select: none;
+      }
+
+      .code-content {
+        color: var(--text-secondary);
+      }
+
+      .code-content .keyword { color: #c678dd; }
+      .code-content .string { color: #98c379; }
+      .code-content .property { color: #e5c07b; }
+      .code-content .comment { color: var(--text-muted); font-style: italic; }
+      .code-content .function { color: #61afef; }
+
+      /* Stats Section */
+      .stats {
+        padding: 120px 0;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border-subtle);
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 48px;
+      }
+
+      .stat-item {
+        text-align: center;
+      }
+
+      .stat-value {
+        font-size: 56px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        background: linear-gradient(180deg, var(--text-primary), var(--text-muted));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 8px;
+      }
+
+      .stat-label {
+        font-size: 15px;
+        color: var(--text-secondary);
+      }
+
+      /* Features Section */
+      .features {
+        padding: 160px 0;
+      }
+
+      .section-header {
+        text-align: center;
+        max-width: 640px;
+        margin: 0 auto 80px;
+      }
+
+      .section-tag {
+        display: inline-block;
+        padding: 6px 14px;
+        background: rgba(249, 115, 22, 0.1);
+        border: 1px solid rgba(249, 115, 22, 0.2);
+        border-radius: 100px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--accent-primary);
+        margin-bottom: 20px;
+      }
+
+      .section-title {
+        font-size: 44px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-bottom: 16px;
+      }
+
+      .section-subtitle {
+        font-size: 18px;
+        color: var(--text-secondary);
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+      }
+
+      .feature-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: 20px;
+        padding: 40px 32px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--border-medium);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .feature-card:hover::before {
+        opacity: 1;
+      }
+
+      .feature-icon {
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(249, 115, 22, 0.05));
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+        color: var(--accent-primary);
+      }
+
+      .feature-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        letter-spacing: -0.01em;
+      }
+
+      .feature-description {
+        font-size: 15px;
+        color: var(--text-secondary);
+        line-height: 1.7;
+      }
+
+      /* API Section */
+      .api-section {
+        padding: 160px 0;
+        background: var(--bg-secondary);
+      }
+
+      .api-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr;
+        gap: 80px;
+        align-items: start;
+      }
+
+      .api-content h2 {
+        font-size: 44px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-bottom: 24px;
+      }
+
+      .api-content p {
+        font-size: 17px;
+        color: var(--text-secondary);
+        margin-bottom: 40px;
+        max-width: 480px;
+      }
+
+      .api-endpoints {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .endpoint {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 20px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        transition: all 0.2s ease;
+      }
+
+      .endpoint:hover {
+        border-color: var(--border-medium);
+        background: var(--bg-elevated);
+      }
+
+      .endpoint-method {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-family: 'DM Mono', monospace;
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .endpoint-method.get {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+      }
+
+      .endpoint-method.post {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+      }
+
+      .endpoint-method.delete {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+      }
+
+      .endpoint-path {
+        font-family: 'DM Mono', monospace;
+        font-size: 14px;
+        color: var(--text-primary);
+      }
+
+      .api-demo {
+        position: sticky;
+        top: 120px;
+      }
+
+      .api-demo .code-window {
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.05),
+          0 30px 60px rgba(0, 0, 0, 0.4);
+      }
+
+      /* SDK Section */
+      .sdk-section {
+        padding: 160px 0;
+      }
+
+      .sdk-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 80px;
+        align-items: center;
+      }
+
+      .sdk-install {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 20px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-medium);
+        border-radius: 12px;
+        margin-bottom: 40px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .sdk-install:hover {
+        border-color: var(--accent-primary);
+        background: var(--bg-elevated);
+      }
+
+      .sdk-install code {
+        font-family: 'DM Mono', monospace;
+        font-size: 14px;
+        color: var(--text-primary);
+        flex: 1;
+      }
+
+      .sdk-install .copy-icon {
+        color: var(--text-muted);
+        transition: color 0.2s ease;
+      }
+
+      .sdk-install:hover .copy-icon {
+        color: var(--accent-primary);
+      }
+
+      .sdk-features {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+      }
+
+      .sdk-feature {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .sdk-feature-icon {
+        width: 24px;
+        height: 24px;
+        color: var(--accent-primary);
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+
+      .sdk-feature-text {
+        font-size: 15px;
+        color: var(--text-secondary);
+      }
+
+      /* Installation Section */
+      .install-section {
+        padding: 160px 0;
+        background: var(--bg-secondary);
+      }
+
+      .install-tabs {
+        display: flex;
+        gap: 4px;
+        padding: 4px;
+        background: var(--bg-tertiary);
+        border-radius: 12px;
+        width: fit-content;
+        margin: 0 auto 48px;
+      }
+
+      .install-tab {
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .install-tab.active {
+        background: var(--bg-elevated);
+        color: var(--text-primary);
+      }
+
+      .install-tab:hover:not(.active) {
+        color: var(--text-primary);
+      }
+
+      .install-content {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .install-step {
+        display: flex;
+        gap: 24px;
+        margin-bottom: 32px;
+      }
+
+      .step-number {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 600;
+        flex-shrink: 0;
+      }
+
+      .step-content {
+        flex: 1;
+      }
+
+      .step-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 12px;
+      }
+
+      .step-code {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        padding: 16px 20px;
+        font-family: 'DM Mono', monospace;
+        font-size: 14px;
+        color: var(--text-primary);
+        overflow-x: auto;
+      }
+
+      /* CTA Section */
+      .cta-section {
+        padding: 160px 0;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .cta-bg {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse 80% 50% at 50% 120%, var(--accent-glow), transparent);
+      }
+
+      .cta-content {
+        position: relative;
+        text-align: center;
+        max-width: 640px;
+        margin: 0 auto;
+      }
+
+      .cta-title {
+        font-size: 48px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-bottom: 20px;
+      }
+
+      .cta-subtitle {
+        font-size: 18px;
+        color: var(--text-secondary);
+        margin-bottom: 40px;
+      }
+
+      .cta-actions {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+      }
+
+      /* Footer */
+      .footer {
+        padding: 80px 0 40px;
+        border-top: 1px solid var(--border-subtle);
+      }
+
+      .footer-grid {
+        display: grid;
+        grid-template-columns: 2fr repeat(3, 1fr);
+        gap: 60px;
+        margin-bottom: 60px;
+      }
+
+      .footer-brand p {
+        font-size: 15px;
+        color: var(--text-secondary);
+        margin-top: 16px;
+        max-width: 280px;
+      }
+
+      .footer-column h4 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: var(--text-primary);
+      }
+
+      .footer-column ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .footer-column a {
+        font-size: 14px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: color 0.2s ease;
+      }
+
+      .footer-column a:hover {
+        color: var(--text-primary);
+      }
+
+      .footer-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 40px;
+        border-top: 1px solid var(--border-subtle);
+      }
+
+      .footer-copyright {
+        font-size: 14px;
+        color: var(--text-muted);
+      }
+
+      .footer-socials {
+        display: flex;
+        gap: 16px;
+      }
+
+      .footer-socials a {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        background: var(--bg-elevated);
+        border-radius: 10px;
+        transition: all 0.2s ease;
+      }
+
+      .footer-socials a:hover {
+        color: var(--text-primary);
+        background: var(--bg-tertiary);
+      }
+
+      /* Responsive */
+      @media (max-width: 1024px) {
+        .hero-content {
+          grid-template-columns: 1fr;
+          gap: 60px;
+        }
+
+        .hero-visual {
+          order: -1;
+        }
+
+        .features-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .api-grid,
+        .sdk-grid {
+          grid-template-columns: 1fr;
+          gap: 48px;
+        }
+
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 40px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .nav-links {
+          display: none;
+        }
+
+        .hero-title {
+          font-size: 40px;
+        }
+
+        .section-title {
+          font-size: 32px;
+        }
+
+        .features-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .footer-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .sdk-features {
+          grid-template-columns: 1fr;
+        }
+
+        .cta-title {
+          font-size: 32px;
+        }
+      }
+
+      /* Mobile menu */
+      .mobile-menu-btn {
+        display: none;
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        cursor: pointer;
+        padding: 8px;
+      }
+
+      @media (max-width: 768px) {
+        .mobile-menu-btn {
+          display: block;
+        }
+      }
     </style>
   </head>
-  <body class="">
-    <!-- Navbar -->
-    <div class="navbar bg-base-100 sticky top-0 z-50">
-      <div class="navbar-start">
-        <div class="dropdown">
-          <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 6h16M4 12h8m-8 6h16"
-              />
-            </svg>
-          </div>
-          <ul
-            tabindex="0"
-            class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
-          >
-            <li><a href="#features">Features</a></li>
-            <li><a href="#api">API</a></li>
-            <li><a href="#sdk">SDK</a></li>
-            <li><a href="#installation">Installation</a></li>
-            <li><a href="#community">Community</a></li>
-          </ul>
-        </div>
-        <a class="btn btn-ghost text-xl">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
-          Resize-it
+  <body>
+    <!-- Navigation -->
+    <nav class="nav" id="nav">
+      <div class="container nav-inner">
+        <a href="#" class="logo">
+          <div class="logo-icon">R</div>
+          <span class="logo-text">Resize-It</span>
         </a>
-      </div>
-      <div class="navbar-center hidden lg:flex">
-        <ul class="menu menu-horizontal px-1">
+
+        <ul class="nav-links">
           <li><a href="#features">Features</a></li>
           <li><a href="#api">API</a></li>
           <li><a href="#sdk">SDK</a></li>
-          <li><a href="#installation">Installation</a></li>
-          <li><a href="#community">Community</a></li>
+          <li><a href="#installation">Install</a></li>
         </ul>
-      </div>
-      <div class="navbar-end">
-        <a
-          href="https://github.com/karnak19/resize-it"
-          target="_blank"
-          class="btn btn-primary"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            class="mr-2 h-5 w-5"
-          >
-            <path
-              d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
-            />
+
+        <div class="nav-cta">
+          <a href="http://localhost:3000/swagger" class="btn btn-ghost">Docs</a>
+          <a href="https://github.com/karnak19/resize-it" target="_blank" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+            GitHub
+          </a>
+        </div>
+
+        <button class="mobile-menu-btn" aria-label="Menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12h18M3 6h18M3 18h18"/>
           </svg>
-          GitHub
-        </a>
+        </button>
       </div>
-    </div>
+    </nav>
 
     <!-- Hero Section -->
-    <div class="hero min-h-[80vh] bg-base-200">
-      <div class="hero-content flex-col lg:flex-row-reverse">
-        <div class="mockup-code max-w-md">
-          <pre
-            data-prefix="$"
-          ><code>bun install @karnak19/resize-it-sdk@1.1.1</code></pre>
-          <pre
-            data-prefix="$"
-          ><code>curl "http://localhost:3000/images/resize/image.jpg?width=800&format=webp"</code></pre>
-        </div>
-        <div>
-          <h1 class="text-5xl font-bold">Resize-it v1.1.1</h1>
-          <p class="py-6 text-xl">
-            Open-source, high-performance image resizing and optimization
-            service built with Bun and Elysia. Self-host your own image
-            transformation API.
+    <section class="hero">
+      <div class="hero-bg">
+        <div class="hero-grid"></div>
+        <div class="hero-glow"></div>
+      </div>
+
+      <div class="container hero-content">
+        <div class="hero-text">
+          <div class="hero-badge">
+            <span class="dot"></span>
+            <span>v1.1.1 now with HEIC support</span>
+          </div>
+
+          <h1 class="hero-title">
+            Image processing<br>
+            <span class="accent">at light speed</span>
+          </h1>
+
+          <p class="hero-subtitle">
+            Open-source, high-performance image resizing and optimization service.
+            Self-host your own transformation API with Bun and Elysia.
           </p>
-          <div class="flex flex-col sm:flex-row gap-4">
-            <a
-              href="https://github.com/karnak19/resize-it"
-              target="_blank"
-              class="btn btn-primary"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                class="mr-2 h-5 w-5"
-              >
-                <path
-                  d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
-                />
+
+          <div class="hero-actions">
+            <a href="#installation" class="btn btn-accent">Get Started</a>
+            <a href="https://github.com/karnak19/resize-it" target="_blank" class="btn btn-ghost">
+              View on GitHub
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 17L17 7M17 7H7M17 7V17"/>
               </svg>
-              Star on GitHub
-            </a>
-            <a
-              href="https://github.com/karnak19/resize-it#readme"
-              target="_blank"
-              class="btn btn-outline"
-            >
-              View README
             </a>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Stats -->
-    <div class="bg-base-100 py-12">
-      <div class="container mx-auto px-4">
-        <div class="stats shadow w-full">
-          <div class="stat">
-            <div class="stat-figure text-primary">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-8 w-8"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                />
-              </svg>
+        <div class="hero-visual">
+          <div class="code-window">
+            <div class="code-header">
+              <div class="code-dot red"></div>
+              <div class="code-dot yellow"></div>
+              <div class="code-dot green"></div>
+              <span class="code-title">terminal</span>
             </div>
-            <div class="stat-title">Processing Speed</div>
-            <div class="stat-value text-primary">10x</div>
-            <div class="stat-desc">Faster than traditional solutions</div>
-          </div>
-
-          <div class="stat">
-            <div class="stat-figure text-secondary">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-8 w-8"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                />
-              </svg>
+            <div class="code-body">
+              <div class="code-line">
+                <span class="code-number">1</span>
+                <span class="code-content"><span class="comment"># Resize an image on-the-fly</span></span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">2</span>
+                <span class="code-content">curl <span class="string">"https://api.resize.it/images/resize/photo.jpg</span></span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">3</span>
+                <span class="code-content"><span class="string">  ?width=800&format=webp&quality=90"</span></span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">4</span>
+                <span class="code-content"></span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">5</span>
+                <span class="code-content"><span class="comment"># Or use the SDK</span></span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">6</span>
+                <span class="code-content"><span class="keyword">const</span> url = client.<span class="function">getResizeUrl</span>(<span class="string">'photo.jpg'</span>, {</span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">7</span>
+                <span class="code-content">  <span class="property">width</span>: <span class="string">800</span>,</span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">8</span>
+                <span class="code-content">  <span class="property">format</span>: <span class="string">'webp'</span></span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">9</span>
+                <span class="code-content">});</span>
+              </div>
             </div>
-            <div class="stat-title">Open Source</div>
-            <div class="stat-value text-secondary">100%</div>
-            <div class="stat-desc">Free and open source</div>
-          </div>
-
-          <div class="stat">
-            <div class="stat-figure text-accent">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-8 w-8"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                />
-              </svg>
-            </div>
-            <div class="stat-title">File Size Reduction</div>
-            <div class="stat-value text-accent">70%</div>
-            <div class="stat-desc">Average optimization</div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+      <div class="container">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value">10x</div>
+            <div class="stat-label">Faster than traditional solutions</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">70%</div>
+            <div class="stat-label">Average file size reduction</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">100%</div>
+            <div class="stat-label">Open source & free</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">&lt;50ms</div>
+            <div class="stat-label">Average response time</div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- Features Section -->
-    <div id="features" class="py-16 bg-base-200">
-      <div class="container mx-auto px-4">
-        <h2 class="text-3xl font-bold text-center mb-12">
-          Why Choose Resize-it?
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <!-- Feature Card 1 -->
-          <div class="card bg-base-100 shadow-xl">
-            <figure class="px-10 pt-10">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-20 w-20 text-primary"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                />
+    <section class="features" id="features">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Features</span>
+          <h2 class="section-title">Everything you need for image optimization</h2>
+          <p class="section-subtitle">
+            Built with performance in mind, using the fastest tools in the ecosystem.
+          </p>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
               </svg>
-            </figure>
-            <div class="card-body items-center text-center">
-              <h2 class="card-title">Lightning Fast</h2>
-              <p>
-                Built with Bun and Elysia for maximum performance. Resize and
-                optimize images in milliseconds.
-              </p>
             </div>
+            <h3 class="feature-title">Lightning Fast</h3>
+            <p class="feature-description">
+              Built with Bun and Sharp for maximum performance. Process thousands of images per second.
+            </p>
           </div>
 
-          <!-- Feature Card 2 -->
-          <div class="card bg-base-100 shadow-xl">
-            <figure class="px-10 pt-10">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-20 w-20 text-secondary"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"
-                />
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/>
               </svg>
-            </figure>
-            <div class="card-body items-center text-center">
-              <h2 class="card-title">S3 Integration</h2>
-              <p>
-                Uses Bun's lightweight, high-performance built-in S3 client for
-                efficient storage operations.
-              </p>
             </div>
+            <h3 class="feature-title">S3 Compatible</h3>
+            <p class="feature-description">
+              Uses Bun's native S3 client. Works with AWS S3, MinIO, Cloudflare R2, and more.
+            </p>
           </div>
 
-          <!-- Feature Card 3 -->
-          <div class="card bg-base-100 shadow-xl">
-            <figure class="px-10 pt-10">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-20 w-20 text-accent"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                />
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <path d="M21 15l-5-5L5 21"/>
               </svg>
-            </figure>
-            <div class="card-body items-center text-center">
-              <h2 class="card-title">Flexible Transformations</h2>
-              <p>
-                Resize, crop, rotate, flip, and apply filters to your images
-                with simple API parameters.
-              </p>
             </div>
+            <h3 class="feature-title">HEIC Support</h3>
+            <p class="feature-description">
+              Convert Apple's HEIC format to web-friendly formats automatically. Full iOS photo support.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">Smart Caching</h3>
+            <p class="feature-description">
+              Redis/Dragonfly integration for blazing-fast repeated requests. Cache once, serve forever.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">Flexible Transforms</h3>
+            <p class="feature-description">
+              Resize, crop, rotate, flip, blur, grayscale, and watermark. All via simple query parameters.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">Self-Hosted</h3>
+            <p class="feature-description">
+              Your data, your infrastructure. No vendor lock-in, no usage limits, complete privacy.
+            </p>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Self-hosting Benefits -->
-    <div class="py-16 bg-base-100">
-      <div class="container mx-auto px-4">
-        <h2 class="text-3xl font-bold text-center mb-12">
-          Benefits of Self-Hosting
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-          <div>
-            <ul class="space-y-6">
-              <li class="flex items-start">
-                <div class="bg-primary rounded-full p-2 mr-4 mt-1">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6 text-primary-content"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 class="text-xl font-bold mb-2">
-                    Complete Privacy & Control
-                  </h3>
-                  <p>
-                    Keep your images and data on your own infrastructure. No
-                    third-party services accessing your content.
-                  </p>
-                </div>
-              </li>
-              <li class="flex items-start">
-                <div class="bg-secondary rounded-full p-2 mr-4 mt-1">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6 text-secondary-content"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 class="text-xl font-bold mb-2">
-                    No Usage Limits or Costs
-                  </h3>
-                  <p>
-                    Process as many images as you need without worrying about
-                    monthly quotas or unexpected bills.
-                  </p>
-                </div>
-              </li>
-              <li class="flex items-start">
-                <div class="bg-accent rounded-full p-2 mr-4 mt-1">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6 text-accent-content"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 class="text-xl font-bold mb-2">
-                    Customizable & Extensible
-                  </h3>
-                  <p>
-                    Modify the code to fit your specific needs. Add custom
-                    transformations or integrate with your existing systems.
-                  </p>
-                </div>
-              </li>
-            </ul>
-          </div>
-          <div class="card bg-base-200 shadow-xl">
-            <div class="card-body">
-              <h3 class="card-title text-2xl mb-4">Deploy Anywhere</h3>
-              <div class="grid grid-cols-3 gap-4">
-                <div
-                  class="flex flex-col items-center p-4 bg-base-300 rounded-box"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-10 w-10 mb-2 text-primary"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"
-                    />
-                  </svg>
-                  <span>Your Server</span>
-                </div>
-                <div
-                  class="flex flex-col items-center p-4 bg-base-300 rounded-box"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-10 w-10 mb-2 text-secondary"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                    />
-                  </svg>
-                  <span>Docker</span>
-                </div>
-                <div
-                  class="flex flex-col items-center p-4 bg-base-300 rounded-box"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-10 w-10 mb-2 text-info"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
-                    />
-                  </svg>
-                  <span>Cloud</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </section>
 
     <!-- API Section -->
-    <div id="api" class="py-16 bg-base-200">
-      <div class="container mx-auto px-4">
-        <h2 class="text-3xl font-bold text-center mb-12">
-          Simple and Powerful API
-        </h2>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-          <div>
-            <h3 class="text-2xl font-bold mb-4">Image Operations</h3>
-            <div class="mb-6">
-              <div class="badge badge-primary mb-2">GET</div>
-              <p class="text-lg font-mono">/images/resize/:path</p>
-              <p class="mt-2">
-                Resize and transform an image with various parameters
-              </p>
-            </div>
+    <section class="api-section" id="api">
+      <div class="container">
+        <div class="api-grid">
+          <div class="api-content">
+            <span class="section-tag">API Reference</span>
+            <h2>Simple, powerful endpoints</h2>
+            <p>
+              A clean REST API that does one thing well. No complex configurations,
+              just intuitive query parameters for all transformations.
+            </p>
 
-            <h4 class="text-xl font-bold mb-2">Query Parameters:</h4>
-            <ul class="list-disc pl-5 space-y-2">
-              <li>
-                <span class="font-mono text-primary">width</span> - Target width
-              </li>
-              <li>
-                <span class="font-mono text-primary">height</span> - Target
-                height
-              </li>
-              <li>
-                <span class="font-mono text-primary">format</span> - Output
-                format (webp, jpeg, png, avif)
-              </li>
-              <li>
-                <span class="font-mono text-primary">quality</span> - Output
-                quality (1-100)
-              </li>
-              <li>
-                <span class="font-mono text-primary">rotate</span>,
-                <span class="font-mono text-primary">flip</span>,
-                <span class="font-mono text-primary">grayscale</span>, etc.
-              </li>
-            </ul>
-          </div>
-          <div class="mockup-code">
-            <pre
-              data-prefix="$"
-            ><code>curl "http://localhost:3000/resize/image.jpg?width=800&format=webp"</code></pre>
-            <pre
-              data-prefix="$"
-            ><code>curl "http://localhost:3000/resize/profile.png?width=200&height=200&grayscale=true"</code></pre>
-            <pre
-              data-prefix="$"
-            ><code>curl "http://localhost:3000/resize/banner.jpg?width=1200&quality=85&rotate=90"</code></pre>
-          </div>
-        </div>
-
-        <!-- Swagger Documentation Section -->
-        <div class="mt-16 bg-base-300 p-8 rounded-box">
-          <div class="flex flex-col md:flex-row items-center gap-6">
-            <div class="flex-1">
-              <h3 class="text-2xl font-bold mb-4">OpenAPI Documentation</h3>
-              <p class="mb-4">
-                Resize-it comes with built-in Swagger documentation, making it
-                easy to explore and test the API.
-              </p>
-              <p class="mb-4">
-                Access the interactive API documentation at
-                <span class="font-mono text-primary">/swagger</span> endpoint.
-              </p>
-              <div class="flex gap-4 mt-6">
-                <a
-                  href="http://localhost:3000/swagger"
-                  target="_blank"
-                  class="btn btn-primary"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 mr-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                  View Swagger Docs
-                </a>
+            <div class="api-endpoints">
+              <div class="endpoint">
+                <span class="endpoint-method get">GET</span>
+                <span class="endpoint-path">/images/resize/:path</span>
+              </div>
+              <div class="endpoint">
+                <span class="endpoint-method post">POST</span>
+                <span class="endpoint-path">/images/upload</span>
+              </div>
+              <div class="endpoint">
+                <span class="endpoint-method get">GET</span>
+                <span class="endpoint-path">/admin/health</span>
+              </div>
+              <div class="endpoint">
+                <span class="endpoint-method post">POST</span>
+                <span class="endpoint-path">/admin/cache/minio/clear</span>
               </div>
             </div>
-            <div class="flex-1">
-              <div class="mockup-browser border bg-base-100">
-                <div class="mockup-browser-toolbar">
-                  <div class="input">http://localhost:3000/swagger</div>
+
+            <a href="http://localhost:3000/swagger" class="btn btn-accent" style="margin-top: 32px;">
+              View Full API Docs
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 17L17 7M17 7H7M17 7V17"/>
+              </svg>
+            </a>
+          </div>
+
+          <div class="api-demo">
+            <div class="code-window">
+              <div class="code-header">
+                <div class="code-dot red"></div>
+                <div class="code-dot yellow"></div>
+                <div class="code-dot green"></div>
+                <span class="code-title">Query Parameters</span>
+              </div>
+              <div class="code-body">
+                <div class="code-line">
+                  <span class="code-number">1</span>
+                  <span class="code-content"><span class="property">width</span>      <span class="comment">// Target width in pixels</span></span>
                 </div>
-                <div
-                  class="px-4 py-8 bg-base-200 flex items-center justify-center"
-                >
-                  <div class="text-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-16 w-16 mx-auto mb-4 text-primary"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                    <p class="font-bold">Interactive API Documentation</p>
-                    <p class="text-sm mt-2">
-                      Explore endpoints, test requests, and view response
-                      schemas
-                    </p>
-                  </div>
+                <div class="code-line">
+                  <span class="code-number">2</span>
+                  <span class="code-content"><span class="property">height</span>     <span class="comment">// Target height in pixels</span></span>
+                </div>
+                <div class="code-line">
+                  <span class="code-number">3</span>
+                  <span class="code-content"><span class="property">format</span>     <span class="comment">// webp, jpeg, png</span></span>
+                </div>
+                <div class="code-line">
+                  <span class="code-number">4</span>
+                  <span class="code-content"><span class="property">quality</span>    <span class="comment">// 1-100 (default: 80)</span></span>
+                </div>
+                <div class="code-line">
+                  <span class="code-number">5</span>
+                  <span class="code-content"><span class="property">rotate</span>     <span class="comment">// Degrees (0-360)</span></span>
+                </div>
+                <div class="code-line">
+                  <span class="code-number">6</span>
+                  <span class="code-content"><span class="property">sharpen</span>    <span class="comment">// Sharpen the image</span></span>
+                </div>
+                <div class="code-line">
+                  <span class="code-number">7</span>
+                  <span class="code-content"><span class="property">flip</span>       <span class="comment">// Horizontal flip</span></span>
+                </div>
+                <div class="code-line">
+                  <span class="code-number">8</span>
+                  <span class="code-content"><span class="property">flop</span>       <span class="comment">// Vertical flip</span></span>
+                </div>
+                <div class="code-line">
+                  <span class="code-number">9</span>
+                  <span class="code-content"><span class="property">grayscale</span>  <span class="comment">// Convert to B&W</span></span>
+                </div>
+                <div class="code-line">
+                  <span class="code-number">10</span>
+                  <span class="code-content"><span class="property">blur</span>       <span class="comment">// Gaussian blur sigma</span></span>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="mt-6">
-            <h4 class="text-xl font-bold mb-2">Features:</h4>
-            <ul class="grid grid-cols-1 md:grid-cols-2 gap-2 list-disc pl-5">
-              <li>Interactive API explorer</li>
-              <li>Request/response schema documentation</li>
-              <li>Try-it-out functionality</li>
-              <li>OpenAPI 3.0 specification</li>
-              <li>Authentication support</li>
-              <li>Downloadable API specification</li>
-            </ul>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- SDK Section -->
-    <div id="sdk" class="py-16 bg-base-100">
-      <div class="container mx-auto px-4">
-        <h2 class="text-3xl font-bold text-center mb-12">
-          Official SDK v1.1.1
-        </h2>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div class="mockup-code">
-            <pre
-              data-prefix="1"
-            ><code>import { ResizeIt } from '@karnak19/resize-it-sdk';</code></pre>
-            <pre data-prefix="2"><code></code></pre>
-            <pre data-prefix="3"><code>// Initialize the client</code></pre>
-            <pre
-              data-prefix="4"
-            ><code>const client = new ResizeIt({</code></pre>
-            <pre
-              data-prefix="5"
-            ><code>  baseUrl: 'http://localhost:3000'</code></pre>
-            <pre data-prefix="6"><code>});</code></pre>
-            <pre data-prefix="7"><code></code></pre>
-            <pre
-              data-prefix="8"
-            ><code>// Generate a resized image URL</code></pre>
-            <pre
-              data-prefix="9"
-            ><code>const imageUrl = client.getResizeUrl('image.jpg', {</code></pre>
-            <pre data-prefix="10"><code>  width: 800,</code></pre>
-            <pre data-prefix="11"><code>  height: 600,</code></pre>
-            <pre data-prefix="12"><code>  format: 'webp',</code></pre>
-            <pre data-prefix="13"><code>  quality: 90</code></pre>
-            <pre data-prefix="14"><code>});</code></pre>
+    <section class="sdk-section" id="sdk">
+      <div class="container">
+        <div class="sdk-grid">
+          <div class="code-window">
+            <div class="code-header">
+              <div class="code-dot red"></div>
+              <div class="code-dot yellow"></div>
+              <div class="code-dot green"></div>
+              <span class="code-title">app.ts</span>
+            </div>
+            <div class="code-body">
+              <div class="code-line">
+                <span class="code-number">1</span>
+                <span class="code-content"><span class="keyword">import</span> { <span class="function">ResizeIt</span> } <span class="keyword">from</span> <span class="string">'@karnak19/resize-it-sdk'</span>;</span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">2</span>
+                <span class="code-content"></span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">3</span>
+                <span class="code-content"><span class="keyword">const</span> client = <span class="keyword">new</span> <span class="function">ResizeIt</span>({</span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">4</span>
+                <span class="code-content">  <span class="property">baseUrl</span>: <span class="string">'https://images.example.com'</span>,</span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">5</span>
+                <span class="code-content">  <span class="property">apiKey</span>: process.env.<span class="property">RESIZE_IT_KEY</span></span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">6</span>
+                <span class="code-content">});</span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">7</span>
+                <span class="code-content"></span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">8</span>
+                <span class="code-content"><span class="comment">// Upload an image</span></span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">9</span>
+                <span class="code-content"><span class="keyword">const</span> { path } = <span class="keyword">await</span> client.<span class="function">uploadImage</span>(file, {</span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">10</span>
+                <span class="code-content">  <span class="property">path</span>: <span class="string">'uploads/photo.jpg'</span>,</span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">11</span>
+                <span class="code-content">  <span class="property">contentType</span>: <span class="string">'image/jpeg'</span></span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">12</span>
+                <span class="code-content">});</span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">13</span>
+                <span class="code-content"></span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">14</span>
+                <span class="code-content"><span class="comment">// Generate optimized URLs</span></span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">15</span>
+                <span class="code-content"><span class="keyword">const</span> thumbnail = client.<span class="function">getResizeUrl</span>(path, {</span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">16</span>
+                <span class="code-content">  <span class="property">width</span>: <span class="string">200</span>,</span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">17</span>
+                <span class="code-content">  <span class="property">format</span>: <span class="string">'webp'</span></span>
+              </div>
+              <div class="code-line">
+                <span class="code-number">18</span>
+                <span class="code-content">});</span>
+              </div>
+            </div>
           </div>
-          <div>
-            <h3 class="text-2xl font-bold mb-4">@karnak19/resize-it-sdk</h3>
-            <p class="mb-4">
-              Our official SDK makes it easy to integrate Resize-it into your
-              applications. Available for JavaScript and TypeScript projects.
+
+          <div class="sdk-content">
+            <span class="section-tag">TypeScript SDK</span>
+            <h2 class="section-title">First-class developer experience</h2>
+            <p class="section-subtitle">
+              Type-safe API client with zero dependencies. Works in Node.js,
+              Bun, browsers, and edge runtimes.
             </p>
 
-            <div class="mb-6">
-              <h4 class="text-xl font-bold mb-2">Installation</h4>
-              <div class="mockup-code mb-4">
-                <pre
-                  data-prefix="$"
-                ><code>npm install @karnak19/resize-it-sdk@1.1.1</code></pre>
-                <pre data-prefix="$"><code># or</code></pre>
-                <pre
-                  data-prefix="$"
-                ><code>bun install @karnak19/resize-it-sdk@1.1.1</code></pre>
-              </div>
+            <div class="sdk-install" onclick="navigator.clipboard.writeText('npm install @karnak19/resize-it-sdk')">
+              <code>npm install @karnak19/resize-it-sdk</code>
+              <svg class="copy-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
             </div>
 
-            <div>
-              <h4 class="text-xl font-bold mb-2">Features</h4>
-              <ul class="list-disc pl-5 space-y-2">
-                <li>Type-safe API with TypeScript support</li>
-                <li>URL builder for all transformation options</li>
-                <li>Image upload functionality</li>
-                <li>Automatic error handling and retries</li>
-                <li>Lightweight with zero dependencies</li>
-              </ul>
+            <div class="sdk-features">
+              <div class="sdk-feature">
+                <svg class="sdk-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span class="sdk-feature-text">Full TypeScript support</span>
+              </div>
+              <div class="sdk-feature">
+                <svg class="sdk-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span class="sdk-feature-text">Zero dependencies</span>
+              </div>
+              <div class="sdk-feature">
+                <svg class="sdk-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span class="sdk-feature-text">Next.js integration</span>
+              </div>
+              <div class="sdk-feature">
+                <svg class="sdk-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span class="sdk-feature-text">URL builder utilities</span>
+              </div>
+              <div class="sdk-feature">
+                <svg class="sdk-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span class="sdk-feature-text">Configurable timeouts</span>
+              </div>
+              <div class="sdk-feature">
+                <svg class="sdk-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span class="sdk-feature-text">Tree-shakeable</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- SDK Documentation Section -->
-    <div class="py-16 bg-base-200">
-      <div class="container mx-auto px-4">
-        <h2 class="text-3xl font-bold text-center mb-12">SDK Documentation</h2>
-
-        <!-- SDK Class Overview -->
-        <div class="mb-12">
-          <h3 class="text-2xl font-bold mb-4">ResizeIt Class</h3>
-          <p class="mb-4">
-            The SDK provides a simple yet powerful interface for interacting
-            with the Resize-it service. The main class,
-            <code class="bg-base-300 px-1 rounded">ResizeIt</code>, offers
-            methods for uploading images, generating resize URLs, and retrieving
-            resized images directly.
-          </p>
-
-          <div class="mockup-code mb-6">
-            <pre data-prefix="1"><code>/**</code></pre>
-            <pre
-              data-prefix="2"
-            ><code> * ResizeIt SDK for uploading and retrieving images</code></pre>
-            <pre data-prefix="3"><code> */</code></pre>
-            <pre data-prefix="4"><code>export class ResizeIt {</code></pre>
-            <pre
-              data-prefix="5"
-            ><code>  private config: ResizeItConfig;</code></pre>
-            <pre data-prefix="6"><code>  </code></pre>
-            <pre data-prefix="7"><code>  /**</code></pre>
-            <pre
-              data-prefix="8"
-            ><code>   * Create a new ResizeIt SDK instance</code></pre>
-            <pre
-              data-prefix="9"
-            ><code>   * @param config Configuration options</code></pre>
-            <pre data-prefix="10"><code>   */</code></pre>
-            <pre
-              data-prefix="11"
-            ><code>  constructor(config: ResizeItConfig) {</code></pre>
-            <pre data-prefix="12"><code>    // ...</code></pre>
-            <pre data-prefix="13"><code>  }</code></pre>
-            <pre data-prefix="14"><code>}</code></pre>
-          </div>
-        </div>
-
-        <!-- Configuration Options -->
-        <div class="mb-12">
-          <h3 class="text-2xl font-bold mb-4">Configuration</h3>
-          <p class="mb-4">
-            When initializing the SDK, you can provide the following
-            configuration options:
-          </p>
-
-          <div class="overflow-x-auto">
-            <table class="table w-full">
-              <thead>
-                <tr>
-                  <th>Option</th>
-                  <th>Type</th>
-                  <th>Description</th>
-                  <th>Default</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><code>baseUrl</code></td>
-                  <td>string</td>
-                  <td>The base URL of your Resize-it service</td>
-                  <td>Required</td>
-                </tr>
-                <tr>
-                  <td><code>timeout</code></td>
-                  <td>number</td>
-                  <td>Request timeout in milliseconds</td>
-                  <td>30000 (30 seconds)</td>
-                </tr>
-                <tr>
-                  <td><code>apiKey</code></td>
-                  <td>string</td>
-                  <td>API key for authentication (if enabled on the server)</td>
-                  <td>undefined</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="mockup-code mt-6">
-            <pre
-              data-prefix="1"
-            ><code>const client = new ResizeIt({</code></pre>
-            <pre
-              data-prefix="2"
-            ><code>  baseUrl: 'https://resize-it.example.com',</code></pre>
-            <pre
-              data-prefix="3"
-            ><code>  timeout: 60000, // 60 seconds</code></pre>
-            <pre data-prefix="4"><code>  apiKey: 'your-api-key'</code></pre>
-            <pre data-prefix="5"><code>});</code></pre>
-          </div>
-        </div>
-
-        <!-- Methods Documentation -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <!-- Upload Image Method -->
-          <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-              <h3 class="card-title text-xl">uploadImage()</h3>
-              <p class="mb-4">
-                Upload an image to the Resize-it service. Supports Buffer, Blob,
-                or base64 string inputs.
-              </p>
-
-              <h4 class="font-bold mt-4 mb-2">Parameters:</h4>
-              <ul class="list-disc pl-5 space-y-1">
-                <li>
-                  <code>imageData</code>: Buffer | Blob | string - The image
-                  data to upload
-                </li>
-                <li>
-                  <code>options</code>: UploadOptions - Upload configuration
-                  options
-                </li>
-              </ul>
-
-              <h4 class="font-bold mt-4 mb-2">Returns:</h4>
-              <p>
-                Promise&lt;UploadResponse&gt; - A promise resolving to the
-                upload response
-              </p>
-
-              <h4 class="font-bold mt-4 mb-2">Example:</h4>
-              <div class="mockup-code mt-2">
-                <pre
-                  data-prefix="1"
-                ><code>// Upload an image from a file input</code></pre>
-                <pre
-                  data-prefix="2"
-                ><code>const fileInput = document.querySelector('input[type="file"]');</code></pre>
-                <pre
-                  data-prefix="3"
-                ><code>const file = fileInput.files[0];</code></pre>
-                <pre data-prefix="4"><code></code></pre>
-                <pre
-                  data-prefix="5"
-                ><code>const response = await client.uploadImage(file, {</code></pre>
-                <pre
-                  data-prefix="6"
-                ><code>  filename: 'custom-name.jpg',</code></pre>
-                <pre data-prefix="7"><code>  folder: 'uploads/2023'</code></pre>
-                <pre data-prefix="8"><code>});</code></pre>
-                <pre data-prefix="9"><code></code></pre>
-                <pre
-                  data-prefix="10"
-                ><code>console.log(response.path); // Path to the uploaded image</code></pre>
-              </div>
-            </div>
-          </div>
-
-          <!-- Get Resize URL Method -->
-          <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-              <h3 class="card-title text-xl">getResizeUrl()</h3>
-              <p class="mb-4">
-                Generate a URL for a resized version of an image with the
-                specified options.
-              </p>
-
-              <h4 class="font-bold mt-4 mb-2">Parameters:</h4>
-              <ul class="list-disc pl-5 space-y-1">
-                <li>
-                  <code>imagePath</code>: string - Path to the image on the
-                  server
-                </li>
-                <li>
-                  <code>options</code>: ResizeOptions - Resize configuration
-                  options
-                </li>
-              </ul>
-
-              <h4 class="font-bold mt-4 mb-2">Returns:</h4>
-              <p>string - The URL to the resized image</p>
-
-              <h4 class="font-bold mt-4 mb-2">Example:</h4>
-              <div class="mockup-code mt-2">
-                <pre
-                  data-prefix="1"
-                ><code>const imageUrl = client.getResizeUrl('uploads/profile.jpg', {</code></pre>
-                <pre data-prefix="2"><code>  width: 400,</code></pre>
-                <pre data-prefix="3"><code>  height: 400,</code></pre>
-                <pre data-prefix="4"><code>  format: 'webp',</code></pre>
-                <pre data-prefix="5"><code>  quality: 85,</code></pre>
-                <pre data-prefix="6"><code>  grayscale: true</code></pre>
-                <pre data-prefix="7"><code>});</code></pre>
-                <pre data-prefix="8"><code></code></pre>
-                <pre data-prefix="9"><code>// Use in an img tag</code></pre>
-                <pre
-                  data-prefix="10"
-                ><code>const img = document.createElement('img');</code></pre>
-                <pre data-prefix="11"><code>img.src = imageUrl;</code></pre>
-                <pre
-                  data-prefix="12"
-                ><code>document.body.appendChild(img);</code></pre>
-              </div>
-            </div>
-          </div>
-
-          <!-- Get Resized Image Method -->
-          <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-              <h3 class="card-title text-xl">getResizedImage()</h3>
-              <p class="mb-4">
-                Fetch a resized image directly as a Blob, useful for further
-                processing or displaying in the browser.
-              </p>
-
-              <h4 class="font-bold mt-4 mb-2">Parameters:</h4>
-              <ul class="list-disc pl-5 space-y-1">
-                <li>
-                  <code>imagePath</code>: string - Path to the image on the
-                  server
-                </li>
-                <li>
-                  <code>options</code>: ResizeOptions - Resize configuration
-                  options
-                </li>
-              </ul>
-
-              <h4 class="font-bold mt-4 mb-2">Returns:</h4>
-              <p>Promise&lt;Blob&gt; - A promise resolving to the image blob</p>
-
-              <h4 class="font-bold mt-4 mb-2">Example:</h4>
-              <div class="mockup-code mt-2">
-                <pre
-                  data-prefix="1"
-                ><code>// Get a resized image as a Blob</code></pre>
-                <pre
-                  data-prefix="2"
-                ><code>const imageBlob = await client.getResizedImage('banner.jpg', {</code></pre>
-                <pre data-prefix="3"><code>  width: 1200,</code></pre>
-                <pre data-prefix="4"><code>  format: 'avif',</code></pre>
-                <pre data-prefix="5"><code>  quality: 90</code></pre>
-                <pre data-prefix="6"><code>});</code></pre>
-                <pre data-prefix="7"><code></code></pre>
-                <pre
-                  data-prefix="8"
-                ><code>// Create an object URL for the blob</code></pre>
-                <pre
-                  data-prefix="9"
-                ><code>const objectUrl = URL.createObjectURL(imageBlob);</code></pre>
-                <pre data-prefix="10"><code></code></pre>
-                <pre
-                  data-prefix="11"
-                ><code>// Use in an img element</code></pre>
-                <pre
-                  data-prefix="12"
-                ><code>document.querySelector('#banner').src = objectUrl;</code></pre>
-              </div>
-            </div>
-          </div>
-
-          <!-- Resize Options -->
-          <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-              <h3 class="card-title text-xl">Resize Options</h3>
-              <p class="mb-4">
-                The SDK supports all transformation options available in the
-                Resize-it API.
-              </p>
-
-              <h4 class="font-bold mt-4 mb-2">Available Options:</h4>
-              <div class="overflow-x-auto">
-                <table class="table w-full">
-                  <thead>
-                    <tr>
-                      <th>Option</th>
-                      <th>Type</th>
-                      <th>Description</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td><code>width</code></td>
-                      <td>number</td>
-                      <td>Target width in pixels</td>
-                    </tr>
-                    <tr>
-                      <td><code>height</code></td>
-                      <td>number</td>
-                      <td>Target height in pixels</td>
-                    </tr>
-                    <tr>
-                      <td><code>format</code></td>
-                      <td>string</td>
-                      <td>Output format (webp, jpeg, png, avif)</td>
-                    </tr>
-                    <tr>
-                      <td><code>quality</code></td>
-                      <td>number</td>
-                      <td>Output quality (1-100)</td>
-                    </tr>
-                    <tr>
-                      <td><code>fit</code></td>
-                      <td>string</td>
-                      <td>
-                        Resize strategy (cover, contain, fill, inside, outside)
-                      </td>
-                    </tr>
-                    <tr>
-                      <td><code>position</code></td>
-                      <td>string</td>
-                      <td>
-                        Position for cropping (top, right top, right, etc.)
-                      </td>
-                    </tr>
-                    <tr>
-                      <td><code>rotate</code></td>
-                      <td>number</td>
-                      <td>Rotation angle in degrees</td>
-                    </tr>
-                    <tr>
-                      <td><code>flip</code></td>
-                      <td>boolean</td>
-                      <td>Flip the image horizontally</td>
-                    </tr>
-                    <tr>
-                      <td><code>flop</code></td>
-                      <td>boolean</td>
-                      <td>Flip the image vertically</td>
-                    </tr>
-                    <tr>
-                      <td><code>grayscale</code></td>
-                      <td>boolean</td>
-                      <td>Convert to grayscale</td>
-                    </tr>
-                    <tr>
-                      <td><code>blur</code></td>
-                      <td>number</td>
-                      <td>Apply Gaussian blur (sigma value)</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Advanced Usage -->
-        <div class="mt-12">
-          <h3 class="text-2xl font-bold mb-6">Advanced Usage Examples</h3>
-
-          <div class="tabs tabs-boxed mb-6">
-            <a class="tab tab-active">Upload & Resize</a>
-            <a class="tab">Image Gallery</a>
-            <a class="tab">Error Handling</a>
-          </div>
-
-          <div class="mockup-code">
-            <pre
-              data-prefix="1"
-            ><code>// Example: Upload an image and generate multiple sizes</code></pre>
-            <pre
-              data-prefix="2"
-            ><code>async function processImage(file) {</code></pre>
-            <pre
-              data-prefix="3"
-            ><code>  const client = new ResizeIt({</code></pre>
-            <pre
-              data-prefix="4"
-            ><code>    baseUrl: 'https://resize-it.example.com'</code></pre>
-            <pre data-prefix="5"><code>  });</code></pre>
-            <pre data-prefix="6"><code>  </code></pre>
-            <pre data-prefix="7"><code>  try {</code></pre>
-            <pre
-              data-prefix="8"
-            ><code>    // 1. Upload the original image</code></pre>
-            <pre
-              data-prefix="9"
-            ><code>    const uploadResult = await client.uploadImage(file, {</code></pre>
-            <pre data-prefix="10"><code>      folder: 'products'</code></pre>
-            <pre data-prefix="11"><code>    });</code></pre>
-            <pre data-prefix="12"><code>    </code></pre>
-            <pre
-              data-prefix="13"
-            ><code>    // 2. Generate URLs for different sizes</code></pre>
-            <pre
-              data-prefix="14"
-            ><code>    const imagePath = uploadResult.path;</code></pre>
-            <pre data-prefix="15"><code>    </code></pre>
-            <pre
-              data-prefix="16"
-            ><code>    const thumbnailUrl = client.getResizeUrl(imagePath, {</code></pre>
-            <pre data-prefix="17"><code>      width: 200,</code></pre>
-            <pre data-prefix="18"><code>      height: 200,</code></pre>
-            <pre data-prefix="19"><code>      fit: 'cover',</code></pre>
-            <pre data-prefix="20"><code>      format: 'webp'</code></pre>
-            <pre data-prefix="21"><code>    });</code></pre>
-            <pre data-prefix="22"><code>    </code></pre>
-            <pre
-              data-prefix="23"
-            ><code>    const previewUrl = client.getResizeUrl(imagePath, {</code></pre>
-            <pre data-prefix="24"><code>      width: 800,</code></pre>
-            <pre data-prefix="25"><code>      format: 'webp'</code></pre>
-            <pre data-prefix="26"><code>    });</code></pre>
-            <pre data-prefix="27"><code>    </code></pre>
-            <pre
-              data-prefix="28"
-            ><code>    const fullsizeUrl = client.getResizeUrl(imagePath, {</code></pre>
-            <pre data-prefix="29"><code>      width: 1920,</code></pre>
-            <pre data-prefix="30"><code>      format: 'webp',</code></pre>
-            <pre data-prefix="31"><code>      quality: 90</code></pre>
-            <pre data-prefix="32"><code>    });</code></pre>
-            <pre data-prefix="33"><code>    </code></pre>
-            <pre data-prefix="34"><code>    return {</code></pre>
-            <pre data-prefix="35"><code>      original: imagePath,</code></pre>
-            <pre
-              data-prefix="36"
-            ><code>      thumbnail: thumbnailUrl,</code></pre>
-            <pre data-prefix="37"><code>      preview: previewUrl,</code></pre>
-            <pre data-prefix="38"><code>      fullsize: fullsizeUrl</code></pre>
-            <pre data-prefix="39"><code>    };</code></pre>
-            <pre data-prefix="40"><code>  } catch (error) {</code></pre>
-            <pre
-              data-prefix="41"
-            ><code>    console.error('Failed to process image:', error);</code></pre>
-            <pre data-prefix="42"><code>    throw error;</code></pre>
-            <pre data-prefix="43"><code>  }</code></pre>
-            <pre data-prefix="44"><code>}</code></pre>
-          </div>
-        </div>
-      </div>
-    </div>
+    </section>
 
     <!-- Installation Section -->
-    <div id="installation" class="py-16 bg-base-200">
-      <div class="container mx-auto px-4">
-        <h2 class="text-3xl font-bold text-center mb-12">Installation Guide</h2>
-
-        <!-- Prerequisites -->
-        <div class="alert alert-info mb-8">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            class="stroke-current shrink-0 w-6 h-6"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            ></path>
-          </svg>
-          <div>
-            <h3 class="font-bold">Prerequisites</h3>
-            <p>
-              Before installing Resize-it, make sure you have the following:
-            </p>
-            <ul class="list-disc ml-6 mt-2">
-              <li>
-                Bun 1.0.0 or higher (<a
-                  href="https://bun.sh/docs/installation"
-                  class="link link-primary"
-                  target="_blank"
-                  >Installation Guide</a
-                >)
-              </li>
-              <li>Git</li>
-            </ul>
-          </div>
+    <section class="install-section" id="installation">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Installation</span>
+          <h2 class="section-title">Up and running in minutes</h2>
+          <p class="section-subtitle">
+            Choose your preferred deployment method.
+          </p>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div>
-            <h3 class="text-2xl font-bold mb-4">Standard Installation</h3>
-            <div class="steps steps-vertical">
-              <div class="step step-primary">
-                <div class="step-content">
-                  <h3 class="text-xl font-bold">Clone the Repository</h3>
-                  <div class="mockup-code mt-2 mb-4">
-                    <pre
-                      data-prefix="$"
-                    ><code>git clone https://github.com/karnak19/resize-it.git</code></pre>
-                    <pre data-prefix="$"><code>cd resize-it</code></pre>
-                  </div>
-                </div>
-              </div>
-              <div class="step step-primary">
-                <div class="step-content">
-                  <h3 class="text-xl font-bold">Install Dependencies</h3>
-                  <div class="mockup-code mt-2 mb-4">
-                    <pre data-prefix="$"><code>bun install</code></pre>
-                    <pre
-                      data-prefix="#"
-                    ><code># Or if you prefer npm</code></pre>
-                    <pre data-prefix="$"><code>npm install</code></pre>
-                  </div>
-                </div>
-              </div>
-              <div class="step step-primary">
-                <div class="step-content">
-                  <h3 class="text-xl font-bold">Configure Environment</h3>
-                  <div class="mockup-code mt-2 mb-4">
-                    <pre data-prefix="$"><code>cp .env.example .env</code></pre>
-                    <pre
-                      data-prefix="$"
-                    ><code>nano .env  # Edit with your configuration</code></pre>
-                  </div>
-                  <p class="text-sm mt-2">
-                    See the Configuration Options table for available settings.
-                  </p>
-                </div>
-              </div>
-              <div class="step step-primary">
-                <div class="step-content">
-                  <h3 class="text-xl font-bold">Start the Server</h3>
-                  <div class="mockup-code mt-2 mb-4">
-                    <pre
-                      data-prefix="$"
-                    ><code>bun run dev  # Development mode with hot reload</code></pre>
-                    <pre data-prefix="#"><code># or</code></pre>
-                    <pre
-                      data-prefix="$"
-                    ><code>bun run start  # Production mode</code></pre>
-                  </div>
-                  <p class="text-sm mt-2">
-                    The server will start at
-                    <span class="font-mono">http://localhost:3000</span> by
-                    default.
-                  </p>
-                </div>
-              </div>
+        <div class="install-tabs">
+          <button class="install-tab active">Docker</button>
+          <button class="install-tab">Manual</button>
+        </div>
+
+        <div class="install-content">
+          <div class="install-step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4 class="step-title">Clone the repository</h4>
+              <div class="step-code">git clone https://github.com/karnak19/resize-it.git && cd resize-it</div>
             </div>
           </div>
-          <div>
-            <h3 class="text-2xl font-bold mb-4">Docker Installation</h3>
-            <p class="mb-4">
-              For containerized deployment, you can use our official Docker
-              image:
-            </p>
-            <div class="mockup-code mb-6">
-              <pre
-                data-prefix="$"
-              ><code>docker pull karnak19/resize-it:latest</code></pre>
-              <pre data-prefix="$"><code>docker run -p 3000:3000 \
-  -v ./images:/app/images \
-  -v ./config:/app/config \
-  -e S3_ENDPOINT=your-s3-endpoint \
-  -e S3_ACCESS_KEY=your-access-key \
-  -e S3_SECRET_KEY=your-secret-key \
-  karnak19/resize-it:latest</code></pre>
+
+          <div class="install-step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4 class="step-title">Start with Docker Compose</h4>
+              <div class="step-code">docker compose up -d</div>
             </div>
+          </div>
 
-            <h3 class="text-2xl font-bold mb-4">Docker Compose</h3>
-            <p class="mb-4">For a complete setup with MinIO and Dragonfly:</p>
-            <div class="mockup-code mb-6">
-              <pre
-                data-prefix="$"
-              ><code>wget https://raw.githubusercontent.com/karnak19/resize-it/main/docker-compose.yml</code></pre>
-              <pre data-prefix="$"><code>docker-compose up -d</code></pre>
-            </div>
-
-            <h3 class="text-2xl font-bold mb-4">Configuration Options</h3>
-            <div class="overflow-x-auto">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Variable</th>
-                    <th>Description</th>
-                    <th>Default</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- Server Configuration -->
-                  <tr class="bg-base-200">
-                    <td colspan="3" class="font-bold">Server Configuration</td>
-                  </tr>
-                  <tr>
-                    <td>HOST</td>
-                    <td>Server host</td>
-                    <td>0.0.0.0</td>
-                  </tr>
-                  <tr>
-                    <td>PORT</td>
-                    <td>Server port</td>
-                    <td>3000</td>
-                  </tr>
-
-                  <!-- Storage Configuration -->
-                  <tr class="bg-base-200">
-                    <td colspan="3" class="font-bold">Storage Configuration</td>
-                  </tr>
-                  <tr>
-                    <td>S3_ENDPOINT</td>
-                    <td>S3 endpoint URL</td>
-                    <td>localhost</td>
-                  </tr>
-                  <tr>
-                    <td>S3_PORT</td>
-                    <td>S3 port</td>
-                    <td>9000</td>
-                  </tr>
-                  <tr>
-                    <td>S3_USE_SSL</td>
-                    <td>Use SSL for S3 connection</td>
-                    <td>false</td>
-                  </tr>
-                  <tr>
-                    <td>S3_REGION</td>
-                    <td>S3 region</td>
-                    <td>us-east-1</td>
-                  </tr>
-                  <tr>
-                    <td>S3_BUCKET</td>
-                    <td>S3 bucket name</td>
-                    <td>images</td>
-                  </tr>
-                  <tr>
-                    <td>S3_ACCESS_KEY</td>
-                    <td>S3 access key</td>
-                    <td>minioadmin</td>
-                  </tr>
-                  <tr>
-                    <td>S3_SECRET_KEY</td>
-                    <td>S3 secret key</td>
-                    <td>minioadmin</td>
-                  </tr>
-
-                  <!-- Image Processing Configuration -->
-                  <tr class="bg-base-200">
-                    <td colspan="3" class="font-bold">
-                      Image Processing Configuration
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>MAX_WIDTH</td>
-                    <td>Maximum allowed image width</td>
-                    <td>1920</td>
-                  </tr>
-                  <tr>
-                    <td>MAX_HEIGHT</td>
-                    <td>Maximum allowed image height</td>
-                    <td>1080</td>
-                  </tr>
-                  <tr>
-                    <td>IMAGE_QUALITY</td>
-                    <td>Default image quality (1-100)</td>
-                    <td>80</td>
-                  </tr>
-
-                  <!-- Cache Configuration -->
-                  <tr class="bg-base-200">
-                    <td colspan="3" class="font-bold">Cache Configuration</td>
-                  </tr>
-                  <tr>
-                    <td>CACHE_ENABLED</td>
-                    <td>Enable image caching</td>
-                    <td>true</td>
-                  </tr>
-                  <tr>
-                    <td>CACHE_MAX_AGE</td>
-                    <td>Cache time-to-live (seconds)</td>
-                    <td>86400</td>
-                  </tr>
-
-                  <!-- Dragonfly Configuration -->
-                  <tr class="bg-base-200">
-                    <td colspan="3" class="font-bold">
-                      Dragonfly Configuration
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>DRAGONFLY_ENABLED</td>
-                    <td>Enable Dragonfly caching</td>
-                    <td>false</td>
-                  </tr>
-                  <tr>
-                    <td>DRAGONFLY_HOST</td>
-                    <td>Dragonfly host</td>
-                    <td>localhost</td>
-                  </tr>
-                  <tr>
-                    <td>DRAGONFLY_PORT</td>
-                    <td>Dragonfly port</td>
-                    <td>6379</td>
-                  </tr>
-                  <tr>
-                    <td>DRAGONFLY_CACHE_TTL</td>
-                    <td>Dragonfly cache TTL (seconds)</td>
-                    <td>86400</td>
-                  </tr>
-
-                  <!-- Security Configuration -->
-                  <tr class="bg-base-200">
-                    <td colspan="3" class="font-bold">
-                      Security Configuration
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>ENABLE_API_KEY_AUTH</td>
-                    <td>Enable API key authentication</td>
-                    <td>false</td>
-                  </tr>
-                  <tr>
-                    <td>API_KEYS</td>
-                    <td>Comma-separated list of valid API keys</td>
-                    <td>dev-api-key</td>
-                  </tr>
-                  <tr>
-                    <td>RATE_LIMIT_ENABLED</td>
-                    <td>Enable rate limiting</td>
-                    <td>true</td>
-                  </tr>
-                  <tr>
-                    <td>RATE_LIMIT_WINDOW_MS</td>
-                    <td>Rate limit window in milliseconds</td>
-                    <td>60000</td>
-                  </tr>
-                  <tr>
-                    <td>RATE_LIMIT_MAX</td>
-                    <td>Maximum requests per window</td>
-                    <td>100</td>
-                  </tr>
-                  <tr>
-                    <td>CORS_ALLOWED_ORIGINS</td>
-                    <td>Comma-separated list of allowed origins</td>
-                    <td>*</td>
-                  </tr>
-
-                  <!-- Debug Configuration -->
-                  <tr class="bg-base-200">
-                    <td colspan="3" class="font-bold">Debug Configuration</td>
-                  </tr>
-                  <tr>
-                    <td>DEBUG</td>
-                    <td>Enable debug mode</td>
-                    <td>false</td>
-                  </tr>
-                </tbody>
-              </table>
+          <div class="install-step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h4 class="step-title">Start resizing images</h4>
+              <div class="step-code">curl "http://localhost:3000/images/resize/sample.jpg?width=800&format=webp"</div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- CTA Section -->
-    <div class="py-16 bg-base-100">
-      <div class="container mx-auto px-4 text-center">
-        <div class="max-w-2xl mx-auto">
-          <h2 class="text-3xl font-bold mb-4">
-            Ready to Optimize Your Images?
-          </h2>
-          <p class="mb-8">
-            Join the community of developers who trust Resize-it v1.1.1 for
-            their image processing needs.
+    <section class="cta-section">
+      <div class="cta-bg"></div>
+      <div class="container">
+        <div class="cta-content">
+          <h2 class="cta-title">Ready to optimize your images?</h2>
+          <p class="cta-subtitle">
+            Join developers who trust Resize-It for their image processing.
+            Self-host with confidence.
           </p>
-          <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="https://github.com/karnak19/resize-it"
-              target="_blank"
-              class="btn btn-primary"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                class="mr-2 h-5 w-5"
-              >
-                <path
-                  d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
-                />
+          <div class="cta-actions">
+            <a href="#installation" class="btn btn-accent">Get Started Free</a>
+            <a href="https://github.com/karnak19/resize-it" target="_blank" class="btn btn-ghost">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
               </svg>
               Star on GitHub
             </a>
-            <a
-              href="https://github.com/karnak19/resize-it#readme"
-              target="_blank"
-              class="btn btn-outline"
-            >
-              View README
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <a href="#" class="logo">
+              <div class="logo-icon">R</div>
+              <span class="logo-text">Resize-It</span>
+            </a>
+            <p>
+              High-performance image resizing and optimization.
+              Open source, self-hosted, lightning fast.
+            </p>
+          </div>
+
+          <div class="footer-column">
+            <h4>Product</h4>
+            <ul>
+              <li><a href="#features">Features</a></li>
+              <li><a href="#api">API</a></li>
+              <li><a href="#sdk">SDK</a></li>
+              <li><a href="#installation">Installation</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-column">
+            <h4>Resources</h4>
+            <ul>
+              <li><a href="http://localhost:3000/swagger">API Docs</a></li>
+              <li><a href="https://github.com/karnak19/resize-it#readme">README</a></li>
+              <li><a href="https://github.com/karnak19/resize-it/releases">Changelog</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-column">
+            <h4>Community</h4>
+            <ul>
+              <li><a href="https://github.com/karnak19/resize-it">GitHub</a></li>
+              <li><a href="https://github.com/karnak19/resize-it/issues">Issues</a></li>
+              <li><a href="https://github.com/karnak19/resize-it/discussions">Discussions</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <p class="footer-copyright">
+            Released under MIT License. Copyright 2025 Resize-It Contributors.
+          </p>
+
+          <div class="footer-socials">
+            <a href="https://github.com/karnak19/resize-it" target="_blank" aria-label="GitHub">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+              </svg>
             </a>
           </div>
         </div>
       </div>
-    </div>
+    </footer>
 
-    <!-- Footer -->
-    <footer class="footer p-10 bg-neutral text-neutral-content flex">
-      <nav>
-        <h6 class="footer-title">Project</h6>
-        <a href="#features" class="link link-hover">Features</a>
-        <a href="#api" class="link link-hover">API</a>
-        <a href="#sdk" class="link link-hover">SDK</a>
-        <a href="#installation" class="link link-hover">Installation</a>
-      </nav>
-      <nav>
-        <h6 class="footer-title">Community</h6>
-        <a
-          href="https://github.com/karnak19/resize-it"
-          target="_blank"
-          class="link link-hover"
-          >GitHub</a
-        >
-      </nav>
-    </footer>
-    <footer class="footer footer-center p-4 bg-base-300 text-base-content">
-      <aside>
-        <p>
-          Released under the MIT License - Copyright © 2025 Resize-it
-          Contributors
-        </p>
-      </aside>
-    </footer>
+    <script>
+      // Navigation scroll effect
+      const nav = document.getElementById('nav');
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+          nav.classList.add('scrolled');
+        } else {
+          nav.classList.remove('scrolled');
+        }
+      });
+
+      // Tab switching
+      const tabs = document.querySelectorAll('.install-tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+        });
+      });
+
+      // Copy to clipboard feedback
+      const sdkInstall = document.querySelector('.sdk-install');
+      sdkInstall.addEventListener('click', () => {
+        const original = sdkInstall.querySelector('code').textContent;
+        sdkInstall.querySelector('code').textContent = 'Copied!';
+        setTimeout(() => {
+          sdkInstall.querySelector('code').textContent = original;
+        }, 1500);
+      });
+    </script>
   </body>
 </html>
