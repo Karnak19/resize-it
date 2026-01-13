@@ -61,23 +61,6 @@ describe("ResizeIt SDK", () => {
       );
     });
 
-    it("should include watermark options in the URL", () => {
-      const sdk = new ResizeIt({ baseUrl: "https://api.example.com" });
-      const url = sdk.getResizeUrl("images/test.jpg", {
-        width: 300,
-        height: 200,
-        watermark: {
-          text: "Example",
-          position: "bottom-right",
-          opacity: 0.5,
-        },
-      });
-
-      expect(url).toBe(
-        "https://api.example.com/resize/images/test.jpg?width=300&height=200&watermarkText=Example&watermarkPosition=bottom-right&watermarkOpacity=0.5"
-      );
-    });
-
     it("should include crop options in the URL", () => {
       const sdk = new ResizeIt({ baseUrl: "https://api.example.com" });
       const url = sdk.getResizeUrl("images/test.jpg", {
@@ -145,6 +128,60 @@ describe("ResizeIt SDK", () => {
             "Content-Type": "application/json",
           },
           body: expect.any(String),
+        })
+      );
+    });
+
+    it("should include watermark in the upload request", async () => {
+      // Mock fetch to return a successful response
+      global.fetch = mock(() => {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              success: true,
+              path: "images/test.jpg",
+              url: "https://api.example.com/images/test.jpg",
+            }),
+          headers: new Headers(),
+          redirected: false,
+          status: 200,
+          statusText: "OK",
+          type: "basic" as ResponseType,
+          url: "https://api.example.com/upload",
+          clone: () => ({} as Response),
+          body: null,
+          bodyUsed: false,
+          arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+          blob: () => Promise.resolve(new Blob([])),
+          formData: () => Promise.resolve(new FormData()),
+          text: () => Promise.resolve(""),
+        } as Response);
+      });
+
+      const sdk = new ResizeIt({
+        baseUrl: "https://api.example.com",
+        watermark: {
+          text: "Example",
+          position: "bottom-right",
+          opacity: 0.5,
+        },
+      });
+
+      const buffer = Buffer.from("test image data");
+      await sdk.uploadImage(buffer, {
+        path: "images/test.jpg",
+        contentType: "image/jpeg",
+      });
+
+      // Verify fetch was called with the right arguments including watermark
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.example.com/upload",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.stringContaining(
+            '"watermark":{"text":"Example","position":"bottom-right","opacity":0.5}'
+          ),
         })
       );
     });

@@ -76,6 +76,10 @@ export class ResizeIt {
           image: base64Image,
           path: options.path,
           contentType: options.contentType,
+          // Include watermark configuration if present
+          ...(this.config.watermark
+            ? { watermark: this.config.watermark }
+            : {}),
         }),
         signal: this.config.timeout
           ? AbortSignal.timeout(this.config.timeout)
@@ -130,24 +134,6 @@ export class ResizeIt {
       url.searchParams.append("blur", options.blur.toString());
     if (options.sharpen !== undefined)
       url.searchParams.append("sharpen", options.sharpen.toString());
-
-    // Add watermark parameters
-    if (options.watermark) {
-      if (options.watermark.text)
-        url.searchParams.append("watermarkText", options.watermark.text);
-      if (options.watermark.image)
-        url.searchParams.append("watermarkImage", options.watermark.image);
-      if (options.watermark.position)
-        url.searchParams.append(
-          "watermarkPosition",
-          options.watermark.position
-        );
-      if (options.watermark.opacity !== undefined)
-        url.searchParams.append(
-          "watermarkOpacity",
-          options.watermark.opacity.toString()
-        );
-    }
 
     // Add crop parameters
     if (options.crop) {

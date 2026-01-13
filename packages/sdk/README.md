@@ -26,6 +26,12 @@ const resizeIt = new ResizeIt({
   baseUrl: "https://your-resize-it-api.com",
   apiKey: "your-api-key", // Optional
   timeout: 30000, // Optional, default is 30000ms (30 seconds)
+  watermark: {
+    // Optional watermark to apply when uploading images
+    text: "Copyright 2023",
+    position: "bottom-right", // Options: "top-left", "top-right", "bottom-left", "bottom-right", "center", "repeat-45deg" (default for text)
+    opacity: 0.5,
+  },
 });
 ```
 
@@ -166,7 +172,30 @@ interface ResizeOptions {
   blur?: number;
   sharpen?: boolean;
 
-  // Watermark options
+  // Crop options
+  crop?: {
+    left?: number;
+    top?: number;
+    width: number;
+    height: number;
+  };
+}
+```
+
+## SDK Configuration
+
+```typescript
+interface ResizeItConfig {
+  // Base URL of the ResizeIt API
+  baseUrl: string;
+
+  // API key for authentication (if required)
+  apiKey?: string;
+
+  // Default timeout for requests in milliseconds
+  timeout?: number;
+
+  // Watermark options to be applied when uploading images
   watermark?: {
     text?: string;
     image?: string;
@@ -175,16 +204,9 @@ interface ResizeOptions {
       | "top-right"
       | "bottom-left"
       | "bottom-right"
-      | "center";
+      | "center"
+      | "repeat-45deg"; // Default for text watermarks - creates a repeating 45° pattern across the image
     opacity?: number;
-  };
-
-  // Crop options
-  crop?: {
-    left?: number;
-    top?: number;
-    width: number;
-    height: number;
   };
 }
 ```

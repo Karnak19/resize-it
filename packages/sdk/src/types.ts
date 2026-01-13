@@ -16,6 +16,22 @@ export interface ResizeItConfig {
    * Default timeout for requests in milliseconds
    */
   timeout?: number;
+
+  /**
+   * Watermark options to be applied when uploading images
+   */
+  watermark?: {
+    text?: string;
+    image?: string;
+    position?:
+      | "top-left"
+      | "top-right"
+      | "bottom-left"
+      | "bottom-right"
+      | "center"
+      | "repeat-45deg";
+    opacity?: number;
+  };
 }
 
 /**
@@ -35,19 +51,6 @@ export interface ResizeOptions {
   grayscale?: boolean;
   blur?: number;
   sharpen?: boolean;
-
-  // Watermark options
-  watermark?: {
-    text?: string;
-    image?: string;
-    position?:
-      | "top-left"
-      | "top-right"
-      | "bottom-left"
-      | "bottom-right"
-      | "center";
-    opacity?: number;
-  };
 
   // Crop options
   crop?: {

@@ -15,23 +15,28 @@ export interface ResizeOptions {
   grayscale?: boolean;
   blur?: number;
   sharpen?: boolean;
-  watermark?: {
-    text?: string;
-    image?: string;
-    position?:
-      | "top-left"
-      | "top-right"
-      | "bottom-left"
-      | "bottom-right"
-      | "center";
-    opacity?: number;
-  };
   crop?: {
     left?: number;
     top?: number;
     width?: number;
     height?: number;
   };
+}
+
+/**
+ * Watermark configuration for image processing
+ */
+export interface WatermarkOptions {
+  text?: string;
+  image?: string;
+  position?:
+    | "top-left"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-right"
+    | "center"
+    | "repeat-45deg";
+  opacity?: number;
 }
 
 interface CachedImage {
@@ -93,7 +98,6 @@ export class ImageService {
       grayscale,
       blur,
       sharpen,
-      watermark,
       crop,
     } = options;
 
@@ -136,14 +140,6 @@ export class ImageService {
 
     if (sharpen) {
       transformer = transformer.sharpen();
-    }
-
-    if (watermark && (watermark.text || watermark.image)) {
-      if (watermark.text) {
-        transformer = await this.applyTextWatermark(transformer, watermark);
-      } else if (watermark.image) {
-        transformer = await this.applyImageWatermark(transformer, watermark);
-      }
     }
 
     switch (format) {
@@ -205,55 +201,121 @@ export class ImageService {
     return outputBuffer;
   }
 
+  /**
+   * Apply watermark to an image during upload
+   * @param imageBuffer Original image buffer
+   * @param watermark Watermark options
+   * @returns Buffer of image with watermark applied
+   */
+  async applyWatermark(
+    imageBuffer: Buffer,
+    watermark: WatermarkOptions
+  ): Promise<Buffer> {
+    let transformer = sharp(imageBuffer);
+
+    if (watermark.text) {
+      transformer = await this.applyTextWatermark(transformer, watermark);
+    } else if (watermark.image) {
+      transformer = await this.applyImageWatermark(transformer, watermark);
+    }
+
+    return transformer.toBuffer();
+  }
+
   private async applyTextWatermark(
     transformer: sharp.Sharp,
-    watermark: ResizeOptions["watermark"]
+    watermark: WatermarkOptions
   ): Promise<sharp.Sharp> {
     if (!watermark?.text) return transformer;
 
-    const { text, position = "bottom-right", opacity = 0.5 } = watermark;
+    const { text, position = "repeat-45deg", opacity = 0.5 } = watermark;
 
-    const svgText = `
-      <svg width="500" height="100">
-        <text x="50%" y="50%" font-family="Arial" font-size="24" fill="rgba(255, 255, 255, ${opacity})" text-anchor="middle" dominant-baseline="middle">${text}</text>
-      </svg>
-    `;
-
-    const textBuffer = Buffer.from(svgText);
+    // Get image dimensions to create appropriate watermark pattern
     const metadata = await transformer.metadata();
+    const width = metadata.width || 800;
+    const height = metadata.height || 600;
 
-    let gravity: sharp.Gravity;
-    switch (position) {
-      case "top-left":
-        gravity = "northwest";
-        break;
-      case "top-right":
-        gravity = "northeast";
-        break;
-      case "bottom-left":
-        gravity = "southwest";
-        break;
-      case "bottom-right":
-        gravity = "southeast";
-        break;
-      case "center":
-        gravity = "center";
-        break;
-      default:
-        gravity = "southeast";
+    // Check if we should use standard positioning or the repeating pattern
+    if (
+      position === "bottom-right" ||
+      position === "bottom-left" ||
+      position === "top-right" ||
+      position === "top-left" ||
+      position === "center"
+    ) {
+      // Use standard positioning for explicit positions
+      let gravity: sharp.Gravity;
+      switch (position) {
+        case "top-left":
+          gravity = "northwest";
+          break;
+        case "top-right":
+          gravity = "northeast";
+          break;
+        case "bottom-left":
+          gravity = "southwest";
+          break;
+        case "bottom-right":
+          gravity = "southeast";
+          break;
+        case "center":
+          gravity = "center";
+          break;
+        default:
+          gravity = "southeast";
+      }
+
+      const svgText = `
+        <svg width="500" height="100">
+          <text x="50%" y="50%" font-family="Arial" font-size="24" fill="rgba(255, 255, 255, ${opacity})" text-anchor="middle" dominant-baseline="middle">${text}</text>
+        </svg>
+      `;
+
+      const textBuffer = Buffer.from(svgText);
+
+      return transformer.composite([
+        {
+          input: textBuffer,
+          gravity,
+        },
+      ]);
+    } else {
+      // Create a repeating 45° watermark pattern across the entire image
+      // Calculate the size of the watermark tile - make it large enough to contain the text
+      const tileSize = Math.max(text.length * 12, 200); // Rough estimate for tile size based on text length
+
+      // Create a larger SVG for the repeating pattern with 45° rotation
+      const svgPattern = `
+        <svg width="${tileSize}" height="${tileSize}" viewBox="0 0 ${tileSize} ${tileSize}">
+          <defs>
+            <pattern id="watermark" patternUnits="userSpaceOnUse" width="${
+              tileSize * 2
+            }" height="${tileSize * 2}" patternTransform="rotate(45)">
+              <text x="${tileSize / 2}" y="${
+        tileSize / 2
+      }" font-family="Arial" font-size="24" fill="rgba(255, 255, 255, ${opacity})" text-anchor="middle" dominant-baseline="middle">${text}</text>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#watermark)" />
+        </svg>
+      `;
+
+      const watermarkBuffer = Buffer.from(svgPattern);
+
+      // Create a composite of the entire image covered with the watermark pattern
+      return transformer.composite([
+        {
+          input: watermarkBuffer,
+          tile: true, // Repeat the watermark pattern
+          blend: "over",
+        },
+      ]);
     }
-
-    return transformer.composite([
-      {
-        input: textBuffer,
-        gravity,
-      },
-    ]);
   }
 
   private async applyImageWatermark(
     transformer: sharp.Sharp,
-    watermark: ResizeOptions["watermark"]
+    watermark: WatermarkOptions
   ): Promise<sharp.Sharp> {
     if (!watermark?.image) return transformer;
 

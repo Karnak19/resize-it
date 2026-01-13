@@ -19,10 +19,6 @@ const resizeQuerySchema = t.Object({
   grayscale: t.Optional(t.String()),
   blur: t.Optional(t.String()),
   sharpen: t.Optional(t.String()),
-  watermarkText: t.Optional(t.String()),
-  watermarkImage: t.Optional(t.String()),
-  watermarkPosition: t.Optional(t.String()),
-  watermarkOpacity: t.Optional(t.String()),
   cropLeft: t.Optional(t.String()),
   cropTop: t.Optional(t.String()),
   cropWidth: t.Optional(t.String()),
@@ -33,6 +29,14 @@ const uploadBodySchema = t.Object({
   image: t.String(),
   path: t.String(),
   contentType: t.String(),
+  watermark: t.Optional(
+    t.Object({
+      text: t.Optional(t.String()),
+      image: t.Optional(t.String()),
+      position: t.Optional(t.String()),
+      opacity: t.Optional(t.Number()),
+    })
+  ),
 });
 
 export const imageController = new Elysia({ prefix: "/images" })
@@ -62,25 +66,6 @@ export const imageController = new Elysia({ prefix: "/images" })
           blur: query.blur ? parseFloat(query.blur as string) : undefined,
           sharpen: query.sharpen === "true",
         };
-
-        // Handle watermark
-        if (query.watermarkText) {
-          options.watermark = {
-            text: query.watermarkText as string,
-            position: (query.watermarkPosition as any) || "bottom-right",
-            opacity: query.watermarkOpacity
-              ? parseFloat(query.watermarkOpacity as string)
-              : 0.5,
-          };
-        } else if (query.watermarkImage) {
-          options.watermark = {
-            image: query.watermarkImage as string,
-            position: (query.watermarkPosition as any) || "bottom-right",
-            opacity: query.watermarkOpacity
-              ? parseFloat(query.watermarkOpacity as string)
-              : 0.5,
-          };
-        }
 
         // Handle crop
         if (query.cropWidth && query.cropHeight) {
@@ -155,7 +140,7 @@ export const imageController = new Elysia({ prefix: "/images" })
     "/upload",
     async ({ body, request }) => {
       try {
-        const { image, path, contentType } = body;
+        const { image, path, contentType, watermark } = body;
 
         if (!image || !path || !contentType) {
           return error(400, { message: "Missing required fields" });
@@ -164,8 +149,14 @@ export const imageController = new Elysia({ prefix: "/images" })
         // Convert base64 to buffer
         const buffer = Buffer.from(image, "base64");
 
-        // Store the original image in MinIO
-        await storageService.putObject(path, buffer, contentType);
+        // Apply watermark if provided before storing
+        let processedImage = buffer;
+        if (watermark && (watermark.text || watermark.image)) {
+          processedImage = await imageService.applyWatermark(buffer, watermark);
+        }
+
+        // Store the processed image in MinIO
+        await storageService.putObject(path, processedImage, contentType);
 
         // Get the base URL from the request
         const baseUrl = new URL(request.url).origin;
