@@ -1,4 +1,4 @@
-import { Elysia, error, t } from "elysia";
+import { Elysia, t } from "elysia";
 import { monitoringService } from "../services/monitoring.service";
 import { storageService } from "../services/bun-s3.service";
 import { cacheService } from "../services/cache.service";
@@ -16,7 +16,7 @@ export const adminController = new Elysia({ prefix: "/admin" })
   // Clear MinIO cache
   .post(
     "/cache/minio/clear",
-    async ({ query }) => {
+    async ({ query, status }) => {
       try {
         const { pattern } = query;
         const prefix = "cache/";
@@ -51,7 +51,7 @@ export const adminController = new Elysia({ prefix: "/admin" })
         };
       } catch (err) {
         console.error("Error clearing MinIO cache:", err);
-        return error(500, { message: "Failed to clear MinIO cache" });
+        throw status(500, { message: "Failed to clear MinIO cache" });
       }
     },
     {
@@ -64,7 +64,7 @@ export const adminController = new Elysia({ prefix: "/admin" })
   // Clear Dragonfly cache
   .post(
     "/cache/dragonfly/clear",
-    async ({ query, set }) => {
+    async ({ query, set, status }) => {
       try {
         if (!cacheService || !config.dragonfly.enabled) {
           set.status = 400;
@@ -80,7 +80,7 @@ export const adminController = new Elysia({ prefix: "/admin" })
         // We would need to implement a pattern-based deletion in the future
         // For now, we'll just return a message that it's not supported
         if (pattern) {
-          return error(400, {
+          throw status(400, {
             message:
               "Pattern-based cache clearing is not supported for Dragonfly yet",
           });
@@ -95,7 +95,7 @@ export const adminController = new Elysia({ prefix: "/admin" })
         };
       } catch (err) {
         console.error("Error clearing Dragonfly cache:", err);
-        return error(500, { message: "Failed to clear Dragonfly cache" });
+        throw status(500, { message: "Failed to clear Dragonfly cache" });
       }
     },
     {
@@ -108,7 +108,7 @@ export const adminController = new Elysia({ prefix: "/admin" })
   // List cached images in MinIO
   .get(
     "/cache/minio/list",
-    async ({ query, set }) => {
+    async ({ query, set, status }) => {
       try {
         const { prefix = "cache/", limit = "100", marker = "" } = query;
         const limitNum = parseInt(limit);
@@ -145,7 +145,7 @@ export const adminController = new Elysia({ prefix: "/admin" })
         };
       } catch (err) {
         console.error("Error listing MinIO cache:", err);
-        return error(500, { message: "Failed to list MinIO cache" });
+        throw status(500, { message: "Failed to list MinIO cache" });
       }
     },
     {

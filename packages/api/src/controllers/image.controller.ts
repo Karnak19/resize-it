@@ -1,4 +1,4 @@
-import { Elysia, error, t } from "elysia";
+import { Elysia, t } from "elysia";
 import { config } from "../config";
 import { imageService, ResizeOptions } from "../services/image.service";
 import { storageService } from "../services/bun-s3.service";
@@ -44,7 +44,7 @@ export const imageController = new Elysia({ prefix: "/images" })
   .get("/health", () => ({ status: "ok" }))
   .get(
     "/resize/*",
-    async ({ params, query, set }) => {
+    async ({ params, query, set, status }) => {
       try {
         // Extract the path from the wildcard parameter
         const path = params["*"];
@@ -101,7 +101,7 @@ export const imageController = new Elysia({ prefix: "/images" })
         // Get the original image from MinIO
         const originalExists = await storageService.objectExists(path);
         if (!originalExists) {
-          return error(404, { message: "Image not found" });
+          throw status(404, { message: "Image not found" });
         }
 
         const originalImage = await storageService.getObject(path);
@@ -130,7 +130,7 @@ export const imageController = new Elysia({ prefix: "/images" })
         return resizedImage;
       } catch (err) {
         console.error("Error processing image:", err);
-        return error(500, { message: "Failed to process image" });
+        throw status(500, { message: "Failed to process image" });
       }
     },
     { params: resizeParamsSchema, query: resizeQuerySchema }
@@ -138,12 +138,12 @@ export const imageController = new Elysia({ prefix: "/images" })
   .use(ApiKeyService)
   .post(
     "/upload",
-    async ({ body, request }) => {
+    async ({ body, request, status }) => {
       try {
         const { image, path, contentType, watermark } = body;
 
         if (!image || !path || !contentType) {
-          return error(400, { message: "Missing required fields" });
+          throw status(400, { message: "Missing required fields" });
         }
 
         // Convert base64 to buffer
@@ -172,7 +172,7 @@ export const imageController = new Elysia({ prefix: "/images" })
         };
       } catch (err) {
         console.error("Error uploading image:", err);
-        return error(500, { message: "Failed to upload image" });
+        throw status(500, { message: "Failed to upload image" });
       }
     },
     { body: uploadBodySchema }
