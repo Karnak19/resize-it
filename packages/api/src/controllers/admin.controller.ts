@@ -13,7 +13,7 @@ export const adminController = new Elysia({ prefix: "/admin" })
     return monitoringService.getStats();
   })
 
-  // Clear MinIO cache
+  // Clear object storage cache
   .post(
     "/cache/minio/clear",
     async ({ query, status }) => {
@@ -32,12 +32,12 @@ export const adminController = new Elysia({ prefix: "/admin" })
         if (objectsToDelete.length === 0) {
           return {
             success: true,
-            message: "No MinIO cache entries found to clear",
+            message: "No storage cache entries found to clear",
             count: 0,
           };
         }
 
-        // Delete objects in batches of 1000 (MinIO limit)
+        // Delete objects in batches of 1000
         const batchSize = 1000;
         for (let i = 0; i < objectsToDelete.length; i += batchSize) {
           const batch = objectsToDelete.slice(i, i + batchSize);
@@ -46,12 +46,12 @@ export const adminController = new Elysia({ prefix: "/admin" })
 
         return {
           success: true,
-          message: "MinIO cache cleared successfully",
+          message: "Storage cache cleared successfully",
           count: objectsToDelete.length,
         };
       } catch (err) {
-        console.error("Error clearing MinIO cache:", err);
-        throw status(500, { message: "Failed to clear MinIO cache" });
+        console.error("Error clearing storage cache:", err);
+        throw status(500, { message: "Failed to clear storage cache" });
       }
     },
     {
@@ -105,7 +105,7 @@ export const adminController = new Elysia({ prefix: "/admin" })
     }
   )
 
-  // List cached images in MinIO
+  // List cached images in object storage
   .get(
     "/cache/minio/list",
     async ({ query, set, status }) => {
@@ -144,8 +144,8 @@ export const adminController = new Elysia({ prefix: "/admin" })
           nextMarker,
         };
       } catch (err) {
-        console.error("Error listing MinIO cache:", err);
-        throw status(500, { message: "Failed to list MinIO cache" });
+        console.error("Error listing storage cache:", err);
+        throw status(500, { message: "Failed to list storage cache" });
       }
     },
     {
@@ -159,12 +159,12 @@ export const adminController = new Elysia({ prefix: "/admin" })
 
   // Get system health
   .get("/health", async () => {
-    // Check MinIO connection
-    let minioStatus = "ok";
+    // Check object storage connection
+    let storageStatus = "ok";
     try {
       await storageService.initialize();
     } catch (error) {
-      minioStatus = "error";
+      storageStatus = "error";
     }
 
     // Check Dragonfly connection if enabled
@@ -186,7 +186,7 @@ export const adminController = new Elysia({ prefix: "/admin" })
 
     return {
       status: "ok",
-      version: "1.0.0",
+      version: "2.0.0",
       uptime: process.uptime(),
       memory: {
         rss: Math.round(memoryUsage.rss / 1024 / 1024) + "MB",
@@ -194,7 +194,7 @@ export const adminController = new Elysia({ prefix: "/admin" })
         heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024) + "MB",
       },
       services: {
-        minio: minioStatus,
+        storage: storageStatus,
         dragonfly: dragonflyStatus,
       },
       cache: {

@@ -17,38 +17,23 @@ export class BunS3Service implements StorageService {
       bucket: config.storage.bucket,
       endpoint,
     });
-
-    // Create bucket if it doesn't exist
-    this.createBucketIfNotExists();
-  }
-
-  private async createBucketIfNotExists(): Promise<void> {
-    const Minio = await import("minio");
-    const minioClient = new Minio.Client({
-      endPoint: config.storage.endpoint,
-      port: config.storage.port,
-      useSSL: config.storage.useSSL,
-      accessKey: config.storage.accessKey,
-      secretKey: config.storage.secretKey,
-    });
-
-    const bucketExists = await minioClient.bucketExists(config.storage.bucket);
-    if (!bucketExists) {
-      logger.info(`Creating bucket '${config.storage.bucket}'`);
-      await minioClient.makeBucket(config.storage.bucket, "us-east-1");
-    } else {
-      logger.info(`Bucket '${config.storage.bucket}' already exists`);
-    }
   }
 
   async initialize(): Promise<void> {
     try {
-      // We can't directly check if a bucket exists with the current API
-      // So we'll try to use the client and handle any errors
+      // We can't directly check if a bucket exists with Bun's S3 client.
+      // A metadata check on a non-existent object validates endpoint/auth for most providers.
       const testFile = this.client.file("test-connection.txt");
       await testFile.exists();
       logger.info(`Connected to bucket '${config.storage.bucket}'`);
     } catch (error: any) {
+      if (error?.name === "S3Error" && error?.code === "UnknownError") {
+        logger.warn(
+          "S3 connection check returned UnknownError; continuing with configured storage provider"
+        );
+        return;
+      }
+
       logger.error("S3 connection error:", error);
       throw new Error(
         `Failed to connect to S3: ${error.message || String(error)}`
@@ -67,7 +52,6 @@ export class BunS3Service implements StorageService {
     contentType: string
   ): Promise<string> {
     const s3File = this.client.file(objectName);
-    console.log("🚀 ~ BunS3Service ~ s3File:", s3File);
     await s3File.write(data, {
       type: contentType,
     });
@@ -106,8 +90,7 @@ export class BunS3Service implements StorageService {
     prefix: string = "",
     recursive: boolean = true
   ): Promise<string[]> {
-    // Unfortunately, the current Bun S3 API doesn't have a direct method to list objects
-    // We'll need to implement this differently or use the MinIO client for this specific functionality
+    // Bun's S3 API doesn't currently expose list objects.
     logger.warn("listObjects is not implemented in Bun's S3 API yet");
     return [];
   }

@@ -1,0 +1,17 @@
+metadata_dir = "/var/lib/garage/meta"
+data_dir = "/var/lib/garage/data"
+db_engine = "lmdb"
+replication_factor = 1
+
+rpc_bind_addr = "[::]:3902"
+rpc_public_addr = "garage:3902"
+rpc_secret = "f2f21f497ca80de4b53154f3a61afafab59b9c2dcb7f4f8b8817f020eb73d5f1"
+
+[s3_api]
+api_bind_addr = "[::]:3900"
+s3_region = "garage"
+
+[admin]
+api_bind_addr = "[::]:3901"
+admin_token = "resize-it-garage-admin"
+metrics_token = "resize-it-garage-metrics"

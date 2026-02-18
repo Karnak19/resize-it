@@ -1,6 +1,6 @@
 {
   "name": "resize-it-monorepo",
-  "version": "1.1.1",
+  "version": "2.0.0",
   "private": true,
   "workspaces": [
     "packages/*"
@@ -19,8 +19,5 @@
   },
   "devDependencies": {
     "bun-types": "latest"
-  },
-  "dependencies": {
-    "minio": "^8.0.4"
   }
 }

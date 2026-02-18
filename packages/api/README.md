@@ -29,10 +29,10 @@ HOST=0.0.0.0
 
 # S3 Storage configuration
 S3_ENDPOINT=localhost
-S3_PORT=9000
+S3_PORT=3900
 S3_USE_SSL=false
-S3_ACCESS_KEY=minioadmin
-S3_SECRET_KEY=minioadmin
+S3_ACCESS_KEY=GK0123456789abcdef01234567
+S3_SECRET_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 S3_BUCKET=images
 
 # Image processing configuration

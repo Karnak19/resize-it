@@ -12,7 +12,7 @@ const app = new Elysia()
       documentation: {
         info: {
           title: "Resize-it API",
-          version: "1.1.1",
+          version: "2.0.0",
           description:
             "API for resizing and optimizing images stored in S3-compatible storage",
         },

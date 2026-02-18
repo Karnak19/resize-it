@@ -8,10 +8,13 @@ export const config = {
   },
   storage: {
     endpoint: process.env.S3_ENDPOINT || "localhost",
-    port: process.env.S3_PORT ? parseInt(process.env.S3_PORT) : 9000,
+    port: process.env.S3_PORT ? parseInt(process.env.S3_PORT) : 3900,
     useSSL: process.env.S3_USE_SSL === "true",
-    accessKey: process.env.S3_ACCESS_KEY || "minioadmin",
-    secretKey: process.env.S3_SECRET_KEY || "minioadmin",
+    accessKey:
+      process.env.S3_ACCESS_KEY || "GK0123456789abcdef01234567",
+    secretKey:
+      process.env.S3_SECRET_KEY ||
+      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
     bucket: process.env.S3_BUCKET || "images",
   },
   image: {

@@ -1,25 +1,46 @@
 version: "3.8"
 
 services:
-  # MinIO service for object storage
-  minio:
-    image: minio/minio:latest
+  # Garage service for object storage
+  garage:
+    image: dxflrs/garage:v2.2.0
     expose:
-      - "9000"
-      - "9001"
-    environment:
-      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-minioadmin}
+      - "3900"
+      - "3901"
+      - "3902"
     volumes:
-      - minio_data:/data
-    command: server /data --console-address ":9001"
+      - ./garage.toml:/etc/garage.toml:ro
+      - garage_meta:/var/lib/garage/meta
+      - garage_data:/var/lib/garage/data
+    command: ["/garage", "-c", "/etc/garage.toml", "server"]
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ["CMD", "/garage", "-c", "/etc/garage.toml", "status"]
       interval: 5s
       timeout: 10s
       retries: 3
       start_period: 10s
     restart: unless-stopped
+
+  # Garage setup service for initial bucket and key provisioning
+  garage-init:
+    build:
+      context: .
+      dockerfile: docker/garage-init/Dockerfile
+    depends_on:
+      garage:
+        condition: service_healthy
+    environment:
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY:-GK0123456789abcdef01234567}
+      - S3_SECRET_KEY=${S3_SECRET_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+      - S3_BUCKET=${S3_BUCKET:-images}
+      - GARAGE_ZONE=${GARAGE_ZONE:-local}
+      - GARAGE_CAPACITY=${GARAGE_CAPACITY:-1G}
+      - GARAGE_KEY_NAME=${GARAGE_KEY_NAME:-resize-it}
+    volumes:
+      - ./garage.toml:/etc/garage.toml:ro
+      - ./scripts/init-garage.sh:/init-garage.sh:ro
+      - garage_meta:/var/lib/garage/meta
+    restart: "no"
 
   # Dragonfly service for caching
   dragonfly:
@@ -47,12 +68,12 @@ services:
       - "3000"
     environment:
       - SERVICE_FQDN_RESIZEIT_3000
-      - S3_ENDPOINT=minio
-      - S3_PORT=9000
+      - S3_ENDPOINT=garage
+      - S3_PORT=3900
       - S3_USE_SSL=false
-      - S3_ACCESS_KEY=${S3_ACCESS_KEY:-minioadmin}
-      - S3_SECRET_KEY=${S3_SECRET_KEY:-minioadmin}
-      - S3_BUCKET=${MINIO_BUCKET:-images}
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY:-GK0123456789abcdef01234567}
+      - S3_SECRET_KEY=${S3_SECRET_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+      - S3_BUCKET=${S3_BUCKET:-images}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-*}
       - DRAGONFLY_HOST=dragonfly
       - DRAGONFLY_PORT=6379
@@ -60,15 +81,17 @@ services:
       - API_KEYS=${API_KEYS:-dev-api-key}
       - ENABLE_API_KEY_AUTH=${ENABLE_API_KEY_AUTH:-false}
     depends_on:
-      minio:
-        condition: service_healthy
+      garage-init:
+        condition: service_completed_successfully
       dragonfly:
         condition: service_healthy
     restart: unless-stopped
 
 # Define named volumes for data persistence
 volumes:
-  minio_data:
-    name: resize-it-minio-data
+  garage_meta:
+    name: resize-it-garage-meta
+  garage_data:
+    name: resize-it-garage-data
   dragonfly_data:
     name: resize-it-dragonfly-data
