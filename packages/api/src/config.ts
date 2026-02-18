@@ -11,10 +11,10 @@ export const config = {
     port: process.env.S3_PORT ? parseInt(process.env.S3_PORT) : 3900,
     useSSL: process.env.S3_USE_SSL === "true",
     accessKey:
-      process.env.S3_ACCESS_KEY || "GK0123456789abcdef01234567",
+      process.env.S3_ACCESS_KEY || "GK000000000000000000000000",
     secretKey:
       process.env.S3_SECRET_KEY ||
-      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "0000000000000000000000000000000000000000000000000000000000000000",
     bucket: process.env.S3_BUCKET || "images",
   },
   image: {
