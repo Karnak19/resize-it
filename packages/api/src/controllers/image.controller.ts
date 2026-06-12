@@ -41,6 +41,14 @@ const uploadBodySchema = t.Object({
 
 export const imageController = new Elysia({ prefix: "/images" })
   // .use(AuthMiddleware.apiKeyAuth)
+  // The cors() plugin sets `Vary: *` for wildcard origins, which makes every
+  // response uncacheable (Cloudflare/CDNs refuse to cache `Vary: *`). Resized
+  // images are deterministic per URL+query, so override it with the only header
+  // they actually vary on. Lowercase `vary` overwrites the cors-set value
+  // instead of appending a second header.
+  .onAfterHandle(({ set }) => {
+    set.headers.vary = "Accept-Encoding";
+  })
   .get("/health", () => ({ status: "ok" }))
   .get(
     "/resize/*",
