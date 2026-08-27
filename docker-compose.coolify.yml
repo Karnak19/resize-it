@@ -26,6 +26,12 @@ services:
     image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
     ulimits:
       memlock: -1
+    # Without --maxmemory Dragonfly sizes itself against *host* RAM, not the
+    # container's share of it. On the 48GB host this reached 11.4GB resident —
+    # a quarter of the machine, permanently, for a resize cache — and left
+    # nothing for a memory spike elsewhere. --cache_mode evicts the coldest
+    # keys at the ceiling instead of erroring, which is what a cache should do.
+    command: ["--maxmemory=4gb", "--cache_mode=true"]
     expose:
       - "6379"
     volumes:
